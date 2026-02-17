@@ -1,7 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      // Adicionando permissão para o Bunny.net
+      {
+        protocol: 'https',
+        hostname: 'vz-7cffe64a-76f.b-cdn.net',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
