@@ -45,24 +45,26 @@ export default function HomePage() {
             <div className="fixed inset-0 pointer-events-none opacity-5 bg-grain mix-blend-overlay z-50"></div>
 
             {/* --- NAVBAR --- */}
+            {/* --- NAVBAR --- */}
             <nav
+                id="navbar" // Importante manter o ID para o efeito de scroll funcionar
                 className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 border-b ${scrolled
                     ? "bg-catarse-black/90 backdrop-blur-md py-4 border-white/5"
-                    : "bg-transparent py-8 border-transparent"
+                    : "bg-transparent py-6 md:py-8 border-transparent"
                     }`}
             >
                 <div className="container mx-auto px-6 flex justify-between items-center">
+
                     {/* Logo */}
-                    <div className="relative w-32 h-8 md:w-40 md:h-10">
+                    <div className="relative w-28 h-6 md:w-40 md:h-10">
                         <Image src="/logo.png" alt="Catarse" fill className="object-contain object-left" priority />
                     </div>
 
-                    {/* Menu Desktop */}
+                    {/* --- MENU DESKTOP (Aparece só no PC) --- */}
                     <div className="hidden md:flex items-center gap-10">
                         <a href="#manifesto" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Manifesto</a>
                         <a href="#portfolio" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Cinemateca</a>
 
-                        {/* Botão de Acesso ao Cliente */}
                         <Link
                             href="/login"
                             className="group px-6 py-3 bg-white/5 border border-white/10 hover:border-catarse-gold hover:bg-catarse-gold/10 transition-all rounded-sm flex items-center gap-2"
@@ -73,6 +75,21 @@ export default function HomePage() {
                             </svg>
                         </Link>
                     </div>
+
+                    {/* --- MENU MOBILE (Aparece só no Celular) --- */}
+                    {/* A classe 'md:hidden' faz ele sumir em telas grandes */}
+                    <div className="md:hidden">
+                        <Link
+                            href="/login"
+                            className="flex items-center gap-2 px-4 py-2 border border-catarse-gold/30 text-catarse-gold text-[10px] uppercase tracking-widest rounded-sm hover:bg-catarse-gold hover:text-catarse-moss transition-colors"
+                        >
+                            <span>Login</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                            </svg>
+                        </Link>
+                    </div>
+
                 </div>
             </nav>
 
