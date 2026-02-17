@@ -15,9 +15,11 @@ const newsreader = Newsreader({
   display: "swap",
 });
 
+// --- AQUI ESTÁ A MUDANÇA ---
 export const metadata: Metadata = {
-  title: "Catarse Studio",
-  description: "Cinema de Autor e Memórias Digitais.",
+  title: "Catarse Film",
+  description: "Memórias Cinematográficas.",
+  manifest: "/manifest.json", // <--- Linha adicionada
 };
 
 export default function RootLayout({

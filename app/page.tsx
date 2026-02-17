@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-// Dados Fictícios do Portfólio (Substitua pelas suas melhores capas depois)
+// Dados Fictícios do Portfólio
 const PORTFOLIO = [
     {
         title: "O Som do Silêncio",
@@ -29,7 +29,6 @@ const PORTFOLIO = [
 export default function HomePage() {
     const [scrolled, setScrolled] = useState(false);
 
-    // Efeito para mudar a cor da navbar ao rolar
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
@@ -45,9 +44,8 @@ export default function HomePage() {
             <div className="fixed inset-0 pointer-events-none opacity-5 bg-grain mix-blend-overlay z-50"></div>
 
             {/* --- NAVBAR --- */}
-            {/* --- NAVBAR --- */}
             <nav
-                id="navbar" // Importante manter o ID para o efeito de scroll funcionar
+                id="navbar"
                 className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 border-b ${scrolled
                     ? "bg-catarse-black/90 backdrop-blur-md py-4 border-white/5"
                     : "bg-transparent py-6 md:py-8 border-transparent"
@@ -60,10 +58,18 @@ export default function HomePage() {
                         <Image src="/logo.png" alt="Catarse" fill className="object-contain object-left" priority />
                     </div>
 
-                    {/* --- MENU DESKTOP (Aparece só no PC) --- */}
-                    <div className="hidden md:flex items-center gap-10">
+                    {/* --- MENU DESKTOP --- */}
+                    <div className="hidden md:flex items-center gap-8">
                         <a href="#manifesto" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Manifesto</a>
                         <a href="#portfolio" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Cinemateca</a>
+
+                        {/* Link Download Desktop */}
+                        <Link href="/download" className="text-xs uppercase tracking-[0.2em] text-catarse-gold hover:text-white transition-colors flex items-center gap-2">
+                            <span>App</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                        </Link>
 
                         <Link
                             href="/login"
@@ -76,9 +82,18 @@ export default function HomePage() {
                         </Link>
                     </div>
 
-                    {/* --- MENU MOBILE (Aparece só no Celular) --- */}
-                    {/* A classe 'md:hidden' faz ele sumir em telas grandes */}
-                    <div className="md:hidden">
+                    {/* --- MENU MOBILE --- */}
+                    <div className="md:hidden flex gap-4">
+                        {/* Botão Download Mobile */}
+                        <Link
+                            href="/download"
+                            className="flex items-center justify-center w-10 h-10 border border-white/10 text-catarse-gold rounded-sm hover:bg-white/5 transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                        </Link>
+
                         <Link
                             href="/login"
                             className="flex items-center gap-2 px-4 py-2 border border-catarse-gold/30 text-catarse-gold text-[10px] uppercase tracking-widest rounded-sm hover:bg-catarse-gold hover:text-catarse-moss transition-colors"
@@ -95,7 +110,6 @@ export default function HomePage() {
 
             {/* --- HERO SECTION --- */}
             <header className="relative h-screen w-full flex items-center justify-center overflow-hidden">
-                {/* Background Imagem/Vídeo */}
                 <div className="absolute inset-0 z-0">
                     <Image
                         src="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1920&auto=format&fit=crop"
@@ -124,7 +138,6 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                {/* Scroll Indicator */}
                 <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50 animate-bounce">
                     <span className="text-[9px] uppercase tracking-widest">Scroll</span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -165,7 +178,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* --- CINEMATECA (PORTFOLIO) --- */}
+            {/* --- CINEMATECA --- */}
             <section id="portfolio" className="py-24 bg-zinc-900/30 border-t border-white/5">
                 <div className="container mx-auto px-6 mb-16 flex justify-between items-end">
                     <div>
@@ -196,7 +209,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* --- SERVIÇOS / DIFERENCIAIS --- */}
+            {/* --- SERVIÇOS --- */}
             <section className="py-24 bg-catarse-black">
                 <div className="container mx-auto px-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
@@ -228,6 +241,58 @@ export default function HomePage() {
                 </div>
             </section>
 
+            {/* --- SEÇÃO CATARSE MOBILE --- */}
+            <section className="py-24 bg-zinc-900/20 border-y border-white/5 relative overflow-hidden">
+                <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-12">
+
+                    {/* Texto (Esquerda) */}
+                    <div className="md:w-1/2 space-y-6 relative z-10 text-center md:text-left">
+                        <span className="text-catarse-gold text-xs uppercase tracking-widest block">Catarse Mobile</span>
+                        <h2 className="text-3xl md:text-5xl font-serif italic text-white leading-tight">
+                            Leve o cinema<br />para o seu bolso.
+                        </h2>
+                        <p className="text-white/60 font-light leading-relaxed max-w-md mx-auto md:mx-0">
+                            Acompanhe o status da edição em tempo real, receba notificações e assista à sua estreia diretamente pelo nosso aplicativo exclusivo.
+                        </p>
+                        <div className="pt-4">
+                            <Link
+                                href="/download"
+                                className="inline-flex items-center gap-3 px-8 py-4 border border-catarse-gold text-catarse-gold hover:bg-catarse-gold hover:text-catarse-moss transition-all uppercase text-xs font-bold tracking-widest rounded-sm"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                </svg>
+                                Baixar Aplicativo
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* QR Code (Direita - Só aparece no Desktop) */}
+                    <div className="md:w-1/2 flex justify-center relative">
+                        {/* Círculo decorativo atrás */}
+                        <div className="absolute w-64 h-64 bg-catarse-gold/5 rounded-full blur-3xl"></div>
+
+                        <div className="hidden md:flex flex-col items-center gap-4 p-6 border border-white/10 bg-black/40 rounded-2xl backdrop-blur-sm shadow-2xl relative z-10">
+                            <div className="relative w-48 h-48 bg-white p-3 rounded-lg">
+                                <Image
+                                    src="/qr-code.png"
+                                    alt="Baixe o App"
+                                    fill
+                                    className="object-contain"
+                                />
+                            </div>
+                            <p className="text-catarse-gold text-[10px] uppercase tracking-[3px]">Escaneie com a Câmera</p>
+                        </div>
+
+                        {/* No mobile, mostramos uma imagem ilustrativa do app ou nada */}
+                        <div className="md:hidden relative w-48 h-48 opacity-20">
+                            <Image src="/logo.png" alt="Logo" fill className="object-contain" />
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
             {/* --- CTA FINAL --- */}
             <section className="py-32 bg-catarse-gold text-catarse-moss relative overflow-hidden">
                 <div className="container mx-auto px-6 text-center relative z-10">
@@ -244,7 +309,6 @@ export default function HomePage() {
                         Solicitar Orçamento
                     </a>
                 </div>
-                {/* Noise invertido para textura */}
                 <div className="absolute inset-0 pointer-events-none opacity-10 bg-grain mix-blend-multiply"></div>
             </section>
 
@@ -267,12 +331,14 @@ export default function HomePage() {
                             <li><a href="#portfolio" className="hover:text-catarse-gold transition-colors">Filmes</a></li>
                             <li><a href="#manifesto" className="hover:text-catarse-gold transition-colors">Sobre</a></li>
                             <li><Link href="/login" className="hover:text-catarse-gold transition-colors">Área do Cliente</Link></li>
+                            <li><Link href="/download" className="hover:text-catarse-gold transition-colors">Baixar App</Link></li>
                         </ul>
                     </div>
                     <div>
                         <h4 className="text-white text-xs uppercase tracking-widest mb-6">Contato</h4>
                         <ul className="space-y-4 text-xs text-white/40">
                             <li><a href="https://www.instagram.com/catarsefilm/" className="hover:text-catarse-gold transition-colors">Instagram</a></li>
+                            <li><a href="https://vimeo.com" className="hover:text-catarse-gold transition-colors">Vimeo</a></li>
                             <li><a href="https://wa.me/5522999734867" className="hover:text-catarse-gold transition-colors">WhatsApp</a></li>
                             <li>contatocatarsefilm@gmail.com</li>
                         </ul>
