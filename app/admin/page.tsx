@@ -206,7 +206,7 @@ export default function AdminPanel() {
     if (!isAuthenticated) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="bg-white/5 p-8 rounded border border-white/10 text-center space-y-4">
+                <div className="bg-white/5 p-8 rounded border border-white/10 text-center space-y-4 w-full max-w-sm mx-4">
                     <h1 className="text-catarse-gold font-serif italic text-2xl">Catarse Admin</h1>
                     <input
                         type="password"
@@ -222,10 +222,10 @@ export default function AdminPanel() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-900 text-white font-sans flex flex-col">
+        <div className="min-h-screen bg-zinc-900 text-white font-sans flex flex-col overflow-x-hidden">
 
-            <header className="bg-black border-b border-white/10 p-6 flex justify-between items-center sticky top-0 z-50">
-                <div className="flex items-center gap-4">
+            <header className="bg-black border-b border-white/10 p-4 md:p-6 flex flex-col md:flex-row justify-between items-center sticky top-0 z-50 gap-4">
+                <div className="flex items-center gap-4 w-full md:w-auto justify-center md:justify-start">
                     <div className="w-24 relative h-6">
                         <Image src="/logo.png" alt="Logo" fill className="object-contain" />
                     </div>
@@ -233,22 +233,22 @@ export default function AdminPanel() {
                 </div>
 
                 {/* MENU TABS */}
-                <div className="flex gap-4">
+                <div className="flex gap-2 md:gap-4 w-full md:w-auto justify-center">
                     <button
                         onClick={() => setActiveTab('clients')}
-                        className={`text-xs uppercase font-bold px-4 py-2 rounded transition-colors ${activeTab === 'clients' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'}`}
+                        className={`text-[10px] md:text-xs uppercase font-bold px-3 py-2 md:px-4 rounded transition-colors ${activeTab === 'clients' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'}`}
                     >
                         Gerenciar Clientes
                     </button>
                     <button
                         onClick={() => setActiveTab('portfolio')}
-                        className={`text-xs uppercase font-bold px-4 py-2 rounded transition-colors ${activeTab === 'portfolio' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'}`}
+                        className={`text-[10px] md:text-xs uppercase font-bold px-3 py-2 md:px-4 rounded transition-colors ${activeTab === 'portfolio' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'}`}
                     >
                         Global Portfolio
                     </button>
                 </div>
 
-                <div className="w-[120px]">
+                <div className="w-full md:w-[120px]">
                     {activeTab === 'clients' && (
                         <button
                             onClick={() => { setIsCreating(true); setEditingClient(null); resetForm(); }}
@@ -261,13 +261,13 @@ export default function AdminPanel() {
             </header>
 
             {/* MAIN CONTENT AREA */}
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
 
                 {/* VIEW: CLIENTES */}
                 {activeTab === 'clients' && (
                     <>
                         {/* LISTA LATERAL */}
-                        <aside className="w-full md:w-1/3 border-r border-white/10 overflow-y-auto bg-black/20">
+                        <aside className={`${(editingClient || isCreating) ? 'hidden md:block' : 'block'} w-full md:w-1/3 border-r border-white/10 overflow-y-auto bg-black/20`}>
                             {clients.map(client => (
                                 <div
                                     key={client.id}
@@ -291,7 +291,7 @@ export default function AdminPanel() {
 
                         {/* FORMULÁRIO */}
 
-                        <main className="flex-1 p-8 overflow-y-auto">
+                        <main className={`${(!editingClient && !isCreating) ? 'hidden md:block' : 'block'} flex-1 p-4 md:p-8 overflow-y-auto`}>
                             {(editingClient || isCreating) ? (
                                 <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
                                     <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -316,7 +316,7 @@ export default function AdminPanel() {
                                             <input className="w-full bg-black border border-white/10 p-3 rounded text-white" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Ex: Julia & Leo" required />
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4 bg-white/5 p-4 rounded border border-white/10">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/5 p-4 rounded border border-white/10">
                                             <div className="space-y-2">
                                                 <label className="text-xs uppercase text-catarse-gold">Usuário de Acesso</label>
                                                 <input className="w-full bg-black border border-white/10 p-3 rounded text-white" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} placeholder="Ex: juliaeleo" required />
@@ -410,7 +410,7 @@ export default function AdminPanel() {
 
                 {/* VIEW: PORTFOLIO */}
                 {activeTab === 'portfolio' && (
-                    <main className="flex-1 p-8 overflow-y-auto w-full">
+                    <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
                         <div className="max-w-5xl mx-auto">
                             <h2 className="text-2xl font-serif text-catarse-gold mb-6 border-b border-white/10 pb-4">Gerenciar Portfólio Global</h2>
                             <p className="text-white/40 text-sm mb-8">As imagens adicionadas aqui aparecerão no carrossel "A Química da Cor" da página Laboratório para TODOS os clientes.</p>
@@ -427,7 +427,7 @@ export default function AdminPanel() {
                                         onChange={e => setNewPortfolioItem({ ...newPortfolioItem, title: e.target.value })}
                                     />
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-xs uppercase text-white/40">Antes (RAW)</label>
                                             <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'before_img', 'images', true)} className="text-[10px] text-white w-full" />
@@ -450,24 +450,24 @@ export default function AdminPanel() {
                                     <h3 className="text-white text-xs uppercase tracking-widest text-white/40 mb-4">Itens Ativos no Site ({portfolioItems.length})</h3>
 
                                     {portfolioItems.map(item => (
-                                        <div key={item.id} className="flex gap-4 p-4 bg-black/40 border border-white/5 rounded items-center group hover:bg-white/5 transition-colors">
-                                            <div className="flex-1">
+                                        <div key={item.id} className="flex flex-col sm:flex-row gap-4 p-4 bg-black/40 border border-white/5 rounded items-start sm:items-center group hover:bg-white/5 transition-colors">
+                                            <div className="flex-1 w-full sm:w-auto">
                                                 <p className="font-serif italic text-lg text-white">{item.title || "Sem Título"}</p>
                                                 <p className="text-[10px] text-white/20 font-mono mt-1">ID: {item.id}</p>
                                             </div>
-                                            <div className="flex gap-2 relative">
+                                            <div className="flex gap-2 relative w-full sm:w-auto justify-end">
                                                 <div className="w-16 h-10 relative bg-zinc-800 rounded overflow-hidden border border-white/10">
                                                     {item.before_img && <Image src={item.before_img} fill className="object-cover object-center" alt="before" />}
                                                 </div>
                                                 <div className="w-16 h-10 relative bg-zinc-800 rounded overflow-hidden border border-white/10">
                                                     {item.after_img && <Image src={item.after_img} fill className="object-cover object-center" alt="after" />}
                                                 </div>
+                                                <button onClick={() => handleDeletePortfolio(item.id)} className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all ml-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                                    </svg>
+                                                </button>
                                             </div>
-                                            <button onClick={() => handleDeletePortfolio(item.id)} className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                                </svg>
-                                            </button>
                                         </div>
                                     ))}
 
