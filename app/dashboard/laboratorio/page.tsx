@@ -1,33 +1,71 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
 import Link from "next/link";
-import Image from "next/image"; // Importando Image caso precise usar fora do slider
+import { createClient } from "@supabase/supabase-js";
+import Image from "next/image";
 
-// --- CONFIGURAÇÃO DAS IMAGENS ---
-// Coloque aqui o nome de todos os arquivos que você jogou na pasta public
-const FILMES = [
-    { src: "/filme.jpg", label: "Cena 01: O Encontro" },
-    { src: "/filme1.jpg", label: "Cena 02: A Cerimônia" },
-    { src: "/filme2.jpg", label: "Cena 03: Detalhes" },
-];
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function LaboratorioPage() {
     // Estado para controlar qual foto está aparecendo (Começa na 0)
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [images, setImages] = useState<any[]>([]); // Inicializa vazio para garantir que só exiba conteúdo do banco
 
-    // Função Próxima Foto
+    useEffect(() => {
+        const fetchPortfolioImages = async () => {
+            const { data } = await supabase
+                .from("lab_portfolio")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (data && data.length > 0) {
+                const portfolioImages = data.map((item: any) => ({
+                    src: item.before_img,
+                    srcAfter: item.after_img,
+                    label: item.title || "Cena do Portfólio",
+                    isSimulation: false
+                }));
+                // Combine portfolio images with fallback examples if needed, or just replace
+                setImages(portfolioImages);
+            } else {
+                setImages([]);
+            }
+        };
+        fetchPortfolioImages();
+    }, []);
+
     const nextImage = () => {
-        setCurrentIndex((prev) => (prev === FILMES.length - 1 ? 0 : prev + 1));
+        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
     };
 
-    // Função Foto Anterior
     const prevImage = () => {
-        setCurrentIndex((prev) => (prev === 0 ? FILMES.length - 1 : prev - 1));
+        setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
     };
 
-    const currentFilm = FILMES[currentIndex];
+    const currentFilm = images.length > 0 ? images[currentIndex] : null;
+
+    if (!currentFilm) {
+        return (
+            <div className="min-h-screen bg-catarse-moss flex flex-col items-center justify-center py-12 px-6">
+                <Link href="/dashboard" className="absolute top-8 left-8 text-white/40 hover:text-catarse-gold text-xs uppercase tracking-widest flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                    Voltar
+                </Link>
+                <div className="text-center space-y-4">
+                    <p className="text-catarse-gold text-xs uppercase tracking-widest">Showcase de Identidade</p>
+                    <h1 className="font-serif italic text-3xl text-catarse-cream">A Química da Cor</h1>
+                    <p className="text-white/40 italic">Nenhum item no portfólio ainda.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-catarse-moss flex flex-col items-center py-12 px-6 relative overflow-hidden">
@@ -46,7 +84,7 @@ export default function LaboratorioPage() {
 
                 {/* Contador de Imagens */}
                 <span className="text-[10px] uppercase tracking-widest text-white/20">
-                    {currentIndex + 1} / {FILMES.length}
+                    {currentIndex + 1} / {images.length}
                 </span>
             </div>
 
@@ -87,40 +125,51 @@ export default function LaboratorioPage() {
                     <ReactCompareSlider
                         // Reinicia o slider quando muda a imagem (key)
                         key={currentIndex}
+                        position={80} // 80% do itemOne (Original) visível
                         handle={
                             <div className="w-full h-full relative">
                                 <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/50 backdrop-blur-sm -translate-x-1/2 h-full"></div>
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-catarse-moss">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m 0 0L16.5 12M21 7.5H7.5" />
                                     </svg>
                                 </div>
                             </div>
                         }
 
                         itemOne={
-                            <ReactCompareSliderImage
-                                src={currentFilm.src}
-                                alt="Color Graded"
-                            />
-                        }
-
-                        itemTwo={
                             <div className="w-full h-full relative">
-                                {/* Imagem simulando RAW */}
-                                <img
-                                    src={currentFilm.src}
-                                    className="w-full h-full object-cover filter grayscale-[50%] contrast-[80%] brightness-[110%] saturate-[60%]"
-                                    alt="RAW Footage"
-                                />
-                                <div className="absolute top-6 right-6 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                                {currentFilm.isSimulation ? (
+                                    // Simulação CSS (Antiga)
+                                    <img
+                                        src={currentFilm.src}
+                                        className="w-full h-full object-cover object-center filter grayscale-[50%] contrast-[80%] brightness-[110%] saturate-[60%]"
+                                        alt="RAW Footage Simulation"
+                                    />
+                                ) : (
+                                    // Imagem Real (Upload)
+                                    <ReactCompareSliderImage
+                                        src={currentFilm.src} // Original
+                                        alt="RAW Footage Real"
+                                        style={{ objectPosition: 'center' }}
+                                    />
+                                )}
+                                <div className="absolute top-6 left-6 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
                                     <span className="text-[10px] uppercase tracking-widest text-white/70">Original (RAW)</span>
                                 </div>
                             </div>
                         }
+
+                        itemTwo={
+                            <ReactCompareSliderImage
+                                src={currentFilm.srcAfter || currentFilm.src} // Editado
+                                alt="Color Graded"
+                                style={{ objectPosition: 'center' }}
+                            />
+                        }
                     />
 
-                    <div className="absolute top-6 left-6 bg-catarse-gold/90 backdrop-blur-md px-3 py-1 rounded-full pointer-events-none z-20">
+                    <div className="absolute top-6 right-6 bg-catarse-gold/90 backdrop-blur-md px-3 py-1 rounded-full pointer-events-none z-20">
                         <span className="text-[10px] uppercase tracking-widest text-catarse-moss font-bold">Cine Print V2</span>
                     </div>
 
