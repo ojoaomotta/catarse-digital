@@ -36,7 +36,7 @@ export default function SobrePage() {
                         Por trás da Catarse
                     </span>
                     <h1 className="text-4xl md:text-6xl font-serif italic leading-tight text-white">
-                        Somos um casal cristão e sensível que decidimos transformar histórias em filmes.
+                        Somos um casal cristão e sensível que decidiu transformar histórias em filmes.
                     </h1>
                     <p className="text-white/40 font-light text-sm max-w-xl mx-auto leading-relaxed">
                         A Catarse nasceu de um sonho compartilhado, de um amor pela arte e pela autenticidade.
@@ -57,12 +57,9 @@ export default function SobrePage() {
                     <div className="relative group p-10 md:p-16 border border-white/5 hover:border-catarse-gold/20 transition-colors bg-white/[0.01] space-y-8">
                         <div className="absolute top-0 left-0 w-1 h-0 bg-catarse-gold group-hover:h-full transition-all duration-700 ease-out" />
 
-                        {/* Ícone de câmera estilizado como avatar */}
-                        <div className="w-20 h-20 rounded-full border border-catarse-gold/30 bg-catarse-gold/5 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-8 h-8 text-catarse-gold/60">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-                            </svg>
+                        {/* Avatar João */}
+                        <div className="relative w-24 h-24 rounded-full border border-catarse-gold/30 bg-catarse-gold/5 flex-shrink-0 overflow-hidden">
+                            <Image src="/joao.jpg" alt="João" fill className="object-cover" />
                         </div>
 
                         <div>
@@ -92,12 +89,9 @@ export default function SobrePage() {
                     <div className="relative group p-10 md:p-16 border border-white/5 hover:border-catarse-gold/20 transition-colors bg-white/[0.02] space-y-8">
                         <div className="absolute top-0 right-0 w-1 h-0 bg-catarse-gold group-hover:h-full transition-all duration-700 ease-out" />
 
-                        {/* Ícone de olho estilizado como avatar */}
-                        <div className="w-20 h-20 rounded-full border border-catarse-gold/30 bg-catarse-gold/5 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-8 h-8 text-catarse-gold/60">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                            </svg>
+                        {/* Avatar Beatriz */}
+                        <div className="relative w-24 h-24 rounded-full border border-catarse-gold/30 bg-catarse-gold/5 flex-shrink-0 overflow-hidden">
+                            <Image src="/beatriz.jpg" alt="Beatriz" fill className="object-cover" />
                         </div>
 
                         <div>

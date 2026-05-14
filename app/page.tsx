@@ -254,7 +254,7 @@ export default function HomePage() {
                             <span className="text-4xl font-serif italic text-catarse-gold mb-4 block">02</span>
                             <h3 className="text-lg uppercase tracking-widest text-white mb-4">Estrutura</h3>
                             <p className="text-white/40 text-sm leading-relaxed">
-                                Nossos equipamentos de filmagem e de áudio são de altíssima qualidade, os microfones capturam sons com mais de 250 metros de distância. Filmamos em s-log.
+                                Operamos com sensores Sony de alta performance e sistemas de áudio DJI de última geração, garantindo captação cristalina a longas distâncias. Gravamos em perfis logarítmicos (S-Log) para extrair o máximo de alcance dinâmico e texturas de cada cena.
                             </p>
                         </div>
                         <div className="p-8 border border-white/5 hover:border-catarse-gold/30 transition-colors bg-white/[0.02]">
