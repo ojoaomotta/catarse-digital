@@ -1,6 +1,9 @@
 name: Supabase Keep Alive
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     # Roda a cada 2 dias (às 00:00 UTC)
     - cron: '0 0 */2 * *'
