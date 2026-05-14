@@ -28,6 +28,7 @@ const PORTFOLIO = [
 
 export default function HomePage() {
     const [scrolled, setScrolled] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
@@ -92,15 +93,21 @@ export default function HomePage() {
 
                     {/* --- MENU MOBILE --- */}
                     <div className="md:hidden flex gap-4">
-                        {/* Botão Download Mobile */}
-                        <Link
-                            href="/download"
+                        {/* Botão Menu Hamburger */}
+                        <button
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="flex items-center justify-center w-10 h-10 border border-white/10 text-catarse-gold rounded-sm hover:bg-white/5 transition-colors"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                            </svg>
-                        </Link>
+                            {isMobileMenuOpen ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                </svg>
+                            )}
+                        </button>
 
                         <Link
                             href="/login"
@@ -114,6 +121,22 @@ export default function HomePage() {
                     </div>
 
                 </div>
+
+                {/* --- MENU DROPDOWN MOBILE --- */}
+                {isMobileMenuOpen && (
+                    <div className="md:hidden absolute top-full left-0 w-full bg-catarse-black/95 backdrop-blur-xl border-b border-white/5 py-4 px-6 flex flex-col gap-4 shadow-2xl animate-fade-in">
+                        <Link onClick={() => setIsMobileMenuOpen(false)} href="/sobre" className="text-sm uppercase tracking-[0.2em] text-white/80 hover:text-catarse-gold py-2 border-b border-white/5">Sobre</Link>
+                        <Link onClick={() => setIsMobileMenuOpen(false)} href="/nichos" className="text-sm uppercase tracking-[0.2em] text-white/80 hover:text-catarse-gold py-2 border-b border-white/5">Nichos</Link>
+                        <a onClick={() => setIsMobileMenuOpen(false)} href="#manifesto" className="text-sm uppercase tracking-[0.2em] text-white/80 hover:text-catarse-gold py-2 border-b border-white/5">Manifesto</a>
+                        <a onClick={() => setIsMobileMenuOpen(false)} href="#portfolio" className="text-sm uppercase tracking-[0.2em] text-white/80 hover:text-catarse-gold py-2 border-b border-white/5">Cinemateca</a>
+                        <Link onClick={() => setIsMobileMenuOpen(false)} href="/download" className="text-sm uppercase tracking-[0.2em] text-catarse-gold hover:text-white py-2 flex items-center gap-2">
+                            <span>Baixar App</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                        </Link>
+                    </div>
+                )}
             </nav>
 
             {/* --- HERO SECTION --- */}
