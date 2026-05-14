@@ -35,7 +35,7 @@ export default function BriefingPage() {
                 .single();
 
             if (data?.briefing_done) { setCompleted(true); }
-            if (data?.briefing_questions?.length > 0) {
+            if (data && data.briefing_questions && data.briefing_questions.length > 0) {
                 setQuestions(data.briefing_questions);
             }
             setLoading(false);
