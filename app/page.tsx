@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -28,8 +28,14 @@ const PORTFOLIO = [
 
 export default function HomePage() {
     const [scrolled, setScrolled] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
+        // Força o play após a hidratação do React
+        if (videoRef.current) {
+            videoRef.current.muted = true;
+            videoRef.current.play().catch(() => { /* autoplay bloqueado pelo browser */ });
+        }
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
         };
@@ -111,15 +117,17 @@ export default function HomePage() {
             {/* --- HERO SECTION --- */}
             <header className="relative h-screen w-full flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <Image
-                        src="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1920&auto=format&fit=crop"
-                        alt="Background"
-                        fill
-                        className="object-cover opacity-40 animate-pulse"
-                        style={{ animationDuration: '8s' }}
-                        priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-catarse-black via-transparent to-transparent"></div>
+                    <video
+                        ref={videoRef}
+                        muted
+                        loop
+                        playsInline
+                        preload="auto"
+                        className="absolute inset-0 w-full h-full object-cover opacity-50"
+                    >
+                        <source src="/herobg.mp4" type="video/mp4" />
+                    </video>
+                    <div className="absolute inset-0 bg-gradient-to-t from-catarse-black via-catarse-black/30 to-transparent"></div>
                     <div className="absolute inset-0 bg-gradient-to-b from-catarse-black/50 via-transparent to-transparent"></div>
                 </div>
 
@@ -151,10 +159,10 @@ export default function HomePage() {
                 <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
                     <div className="md:col-span-5 relative aspect-[3/4] group overflow-hidden">
                         <Image
-                            src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800&auto=format&fit=crop"
-                            alt="Art"
+                            src="/DSC01666.jpg"
+                            alt="Catarse Film"
                             fill
-                            className="object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700"
+                            className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                         />
                     </div>
                     <div className="md:col-span-1"></div>
@@ -179,7 +187,8 @@ export default function HomePage() {
             </section>
 
             {/* --- CINEMATECA --- */}
-            <section id="portfolio" className="py-24 bg-zinc-900/30 border-t border-white/5">
+            {/* TODO: Exibir últimos posts do Instagram quando a integração estiver pronta */}
+            <section id="portfolio" className="hidden py-24 bg-zinc-900/30 border-t border-white/5">
                 <div className="container mx-auto px-6 mb-16 flex justify-between items-end">
                     <div>
                         <span className="text-catarse-gold text-xs uppercase tracking-[0.25em] block mb-2">Portfolio</span>
