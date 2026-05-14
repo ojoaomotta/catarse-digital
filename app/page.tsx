@@ -157,7 +157,7 @@ export default function HomePage() {
             {/* --- MANIFESTO --- */}
             <section id="manifesto" className="py-24 md:py-32 bg-catarse-black relative">
                 <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
-                    <div className="md:col-span-5 relative aspect-[3/4] group overflow-hidden">
+                    <div className="md:col-span-5 relative aspect-[4/3] group overflow-hidden">
                         <Image
                             src="/ocean.jpg"
                             alt="Catarse Film"
