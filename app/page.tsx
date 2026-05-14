@@ -134,7 +134,7 @@ export default function HomePage() {
                 <div className="relative z-10 text-center px-4 space-y-8 animate-fade-in">
                     <span className="text-catarse-gold text-xs uppercase tracking-[0.4em] border-b border-catarse-gold/30 pb-2">Estúdio de Cinema Autoral</span>
                     <h1 className="text-5xl md:text-8xl font-serif font-light tracking-tight text-white italic mix-blend-overlay opacity-90 leading-tight">
-                        Memórias que<br />o tempo não apaga.
+                        Sua história<br />cinematográfica.
                     </h1>
                     <div className="flex flex-col md:flex-row gap-4 justify-center pt-8">
                         <a href="#portfolio" className="px-8 py-4 bg-catarse-gold text-catarse-moss font-bold text-xs uppercase tracking-widest hover:bg-white transition-colors">
@@ -173,13 +173,9 @@ export default function HomePage() {
                         </h2>
                         <div className="space-y-6 text-white/60 font-light leading-relaxed text-sm md:text-base text-justify">
                             <p>
-                                Em um mundo de imagens rápidas e descartáveis, escolhemos o caminho inverso.
-                                O caminho da permanência. Nosso olhar busca o "não-dito": o suspiro antes do sim,
-                                o tremor nas mãos, a lágrima que cai no escuro.
-                            </p>
-                            <p>
-                                Trabalhamos com a granulação da película, a profundidade da sombra e a elegância da composição
-                                para transformar o seu dia em uma obra de arte cinematográfica.
+                                Vai muito além de narrativas com alta qualidade, exploramos o sentimento do momento.
+                                As nuances que residem entre o momento e a captura. pequenos fragmentos, detalhes
+                                minuciosos que conduz o espectador a sentir cada emoção. literalmente uma “catarse”.
                             </p>
                         </div>
                     </div>
