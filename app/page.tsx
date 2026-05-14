@@ -162,7 +162,7 @@ export default function HomePage() {
                         Sua história<br />cinematográfica.
                     </h1>
                     <div className="flex flex-col md:flex-row gap-4 justify-center pt-8">
-                        <a href="#portfolio" className="px-8 py-4 bg-catarse-gold text-catarse-moss font-bold text-xs uppercase tracking-widest hover:bg-white transition-colors">
+                        <a href="https://www.instagram.com/catarsefilm/" target="_blank" className="px-8 py-4 bg-catarse-gold text-catarse-moss font-bold text-xs uppercase tracking-widest hover:bg-white transition-colors">
                             Ver Obras
                         </a>
                         <a href="https://wa.me/5522999734867" target="_blank" className="px-8 py-4 border border-white/20 text-white font-bold text-xs uppercase tracking-widest hover:border-white transition-colors">
