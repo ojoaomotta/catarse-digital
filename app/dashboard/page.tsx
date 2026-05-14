@@ -6,11 +6,11 @@ import Image from "next/image";
 
 // As etapas do processo cinematográfico
 const STEPS = [
-    { id: 1, label: "Pré-Produção", status: "Briefing" },
-    { id: 2, label: "Captura", status: "Filmagens" },
-    { id: 3, label: "Montagem", status: "Edição" },
-    { id: 4, label: "Color Grading", status: "Cor" },
-    { id: 5, label: "Premiere", status: "Finalizado" },
+    { id: 1, label: "Contrato", status: "Contrato" },
+    { id: 2, label: "Captura", status: "Captura" },
+    { id: 3, label: "Montagem", status: "Montagem" },
+    { id: 4, label: "Color Grading", status: "Color Grading" },
+    { id: 5, label: "Finalização", status: "Finalizado" },
 ];
 
 export default function Dashboard() {

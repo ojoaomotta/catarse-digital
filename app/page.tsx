@@ -66,6 +66,8 @@ export default function HomePage() {
 
                     {/* --- MENU DESKTOP --- */}
                     <div className="hidden md:flex items-center gap-8">
+                        <Link href="/sobre" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Sobre</Link>
+                        <Link href="/nichos" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Nichos</Link>
                         <a href="#manifesto" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Manifesto</a>
                         <a href="#portfolio" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Cinemateca</a>
 
@@ -236,7 +238,7 @@ export default function HomePage() {
                             <span className="text-4xl font-serif italic text-catarse-gold mb-4 block">03</span>
                             <h3 className="text-lg uppercase tracking-widest text-white mb-4">Color Grading</h3>
                             <p className="text-white/40 text-sm leading-relaxed">
-                                Nossa missão é transformar os takes em filme, por isso nosso estilo de edição é realizado através de programas de edição que Hollywood utiliza para a edição de filmes americanos, como por exemplo: Avatar 3, Thor Ragnarok e Planeta dos Macacos. Priorizamos um estilo documental com cores profundas e tom de pele natural.
+                                Elevamos cada cena ao nível de cinema através do padrão de cor das grandes produções. Priorizamos uma estética documental, com cores profundas, contraste rico e tons de pele naturais.
                             </p>
                         </div>
                     </div>
@@ -329,8 +331,9 @@ export default function HomePage() {
                         <h4 className="text-white text-xs uppercase tracking-widest mb-6">Navegação</h4>
                         <ul className="space-y-4 text-xs text-white/40">
                             <li><a href="#" className="hover:text-catarse-gold transition-colors">Home</a></li>
-                            <li><a href="#portfolio" className="hover:text-catarse-gold transition-colors">Filmes</a></li>
-                            <li><a href="#manifesto" className="hover:text-catarse-gold transition-colors">Sobre</a></li>
+                            <li><Link href="/sobre" className="hover:text-catarse-gold transition-colors">Sobre</Link></li>
+                            <li><Link href="/nichos" className="hover:text-catarse-gold transition-colors">Nichos</Link></li>
+                            <li><a href="#manifesto" className="hover:text-catarse-gold transition-colors">Manifesto</a></li>
                             <li><Link href="/login" className="hover:text-catarse-gold transition-colors">Área do Cliente</Link></li>
                             <li><Link href="/download" className="hover:text-catarse-gold transition-colors">Baixar App</Link></li>
                         </ul>

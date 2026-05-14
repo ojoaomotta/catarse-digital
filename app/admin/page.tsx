@@ -26,12 +26,22 @@ export default function AdminPanel() {
         username: "",
         password: "",
         project_name: "",
-        status: "Briefing",
+        status: "Contrato",
         video_url: "",
         video_cover: "",
         download_url: "",
         contract_url: ""
     });
+
+    // Briefing dinâmico
+    const [briefingQuestions, setBriefingQuestions] = useState<{title: string; question: string}[]>([]);
+    const [clientBriefingData, setClientBriefingData] = useState<Record<string,string> | null>(null);
+
+    // Extras / Fragmentos Ocultos
+    const [extras, setExtras] = useState<{title: string; thumb: string; video_url: string; duration: string}[]>([]);
+    const [newExtra, setNewExtra] = useState({title: "", thumb: "", video_url: "", duration: ""});
+    const [extrasUnlocked, setExtrasUnlocked] = useState(false);
+    const [savingExtras, setSavingExtras] = useState(false);
 
     const [portfolioItems, setPortfolioItems] = useState<any[]>([]);
     const [newPortfolioItem, setNewPortfolioItem] = useState({
@@ -58,10 +68,14 @@ export default function AdminPanel() {
 
     const resetForm = () => {
         setFormData({
-            name: "", username: "", password: "", project_name: "", status: "Briefing",
+            name: "", username: "", password: "", project_name: "", status: "Contrato",
             video_url: "", video_cover: "", download_url: "",
             contract_url: ""
         });
+        setBriefingQuestions([]);
+        setClientBriefingData(null);
+        setExtras([]);
+        setExtrasUnlocked(false);
     }
 
     const startEdit = (client: any) => {
@@ -78,6 +92,10 @@ export default function AdminPanel() {
             download_url: client.download_url || "",
             contract_url: client.contract_url || ""
         });
+        setBriefingQuestions(client.briefing_questions || []);
+        setClientBriefingData(client.briefing_data || null);
+        setExtras(client.extras || []);
+        setExtrasUnlocked(client.extras_unlocked || false);
     };
 
     const fetchClients = async () => {
@@ -100,38 +118,32 @@ export default function AdminPanel() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Validação simples
         if (!formData.username || !formData.password) {
             alert("Preencha usuário e senha");
             return;
         }
-
+        const payload = { ...formData, briefing_questions: briefingQuestions };
         if (editingClient) {
-            const { error } = await supabase
-                .from("clients")
-                .update(formData)
-                .eq("id", editingClient.id);
-
-            if (!error) {
-                setEditingClient(null);
-                fetchClients();
-            } else {
-                alert("Erro ao atualizar: " + error.message);
-            }
+            const { error } = await supabase.from("clients").update(payload).eq("id", editingClient.id);
+            if (!error) { setEditingClient(null); fetchClients(); }
+            else alert("Erro ao atualizar: " + error.message);
         } else {
-            const { error } = await supabase
-                .from("clients")
-                .insert([formData]);
-
-            if (!error) {
-                setIsCreating(false);
-                fetchClients();
-            } else {
-                alert("Erro ao criar: " + error.message);
-            }
+            const { error } = await supabase.from("clients").insert([payload]);
+            if (!error) { setIsCreating(false); fetchClients(); }
+            else alert("Erro ao criar: " + error.message);
         }
         resetForm();
+    };
+
+    const saveExtras = async () => {
+        if (!editingClient) return;
+        setSavingExtras(true);
+        const { error } = await supabase.from("clients")
+            .update({ extras, extras_unlocked: extrasUnlocked })
+            .eq("id", editingClient.id);
+        setSavingExtras(false);
+        if (!error) { alert("Fragmentos salvos!"); fetchClients(); }
+        else alert("Erro: " + error.message);
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: string, bucket: string, isPortfolio = false) => {
@@ -335,11 +347,11 @@ export default function AdminPanel() {
                                         <div className="space-y-2">
                                             <label className="text-xs uppercase text-white/40">Status</label>
                                             <select className="w-full bg-black border border-white/10 p-3 rounded text-white" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })}>
-                                                <option value="Briefing">Briefing</option>
-                                                <option value="Filmagens">Filmagens</option>
-                                                <option value="Edição">Edição</option>
-                                                <option value="Cor">Cor (Color Grading)</option>
-                                                <option value="Finalizado">Finalizado</option>
+                                                <option value="Contrato">Contrato</option>
+                                                <option value="Captura">Captura</option>
+                                                <option value="Montagem">Montagem</option>
+                                                <option value="Color Grading">Color Grading</option>
+                                                <option value="Finalizado">Finalização / Finalizado</option>
                                             </select>
                                         </div>
 
@@ -375,6 +387,40 @@ export default function AdminPanel() {
                                             </div>
                                         </div>
 
+                                        {/* PERGUNTAS DO BRIEFING */}
+                                        <div className="p-4 border border-white/10 rounded space-y-4">
+                                            <div className="flex justify-between items-center">
+                                                <h3 className="text-white text-xs uppercase tracking-widest">Perguntas do Briefing</h3>
+                                                <button type="button" onClick={() => setBriefingQuestions(prev => [...prev, { title: "", question: "" }])}
+                                                    className="text-[10px] bg-white/10 hover:bg-catarse-gold hover:text-black text-white px-3 py-1 rounded transition-colors">
+                                                    + Pergunta
+                                                </button>
+                                            </div>
+                                            {briefingQuestions.length === 0 && <p className="text-white/20 text-xs italic">Nenhuma pergunta definida. Clique em "+ Pergunta" para adicionar.</p>}
+                                            {briefingQuestions.map((q, i) => (
+                                                <div key={i} className="bg-black/30 p-3 rounded space-y-2 border border-white/5">
+                                                    <input className="w-full bg-black border border-white/10 p-2 rounded text-white text-xs" placeholder="Título (Ex: Cena 01)" value={q.title}
+                                                        onChange={e => { const u = [...briefingQuestions]; u[i].title = e.target.value; setBriefingQuestions(u); }} />
+                                                    <textarea className="w-full bg-black border border-white/10 p-2 rounded text-white text-xs resize-none" rows={2} placeholder="Texto da pergunta..." value={q.question}
+                                                        onChange={e => { const u = [...briefingQuestions]; u[i].question = e.target.value; setBriefingQuestions(u); }} />
+                                                    <button type="button" onClick={() => setBriefingQuestions(prev => prev.filter((_, j) => j !== i))} className="text-red-400 text-[10px] hover:text-red-300">Remover</button>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* RESPOSTAS DO BRIEFING */}
+                                        {clientBriefingData && Object.keys(clientBriefingData).length > 0 && (
+                                            <div className="p-4 border border-catarse-gold/20 bg-catarse-gold/5 rounded space-y-3">
+                                                <h3 className="text-catarse-gold text-xs uppercase tracking-widest">Respostas do Briefing</h3>
+                                                {Object.entries(clientBriefingData).map(([key, val], i) => (
+                                                    <div key={i} className="space-y-1">
+                                                        <p className="text-white/40 text-[10px] uppercase tracking-wider">{briefingQuestions[i]?.title || key}</p>
+                                                        <p className="text-white text-sm leading-relaxed bg-black/30 p-3 rounded">{val}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
                                         <div className="flex gap-4 pt-4">
                                             <button type="submit" disabled={uploading} className="flex-1 bg-catarse-gold text-black py-3 font-bold uppercase text-xs rounded hover:bg-white transition-colors disabled:opacity-50">
                                                 {uploading ? "Enviando Arquivos..." : (isCreating ? "Criar Cliente" : "Salvar Alterações")}
@@ -397,6 +443,42 @@ export default function AdminPanel() {
                                         </div>
 
                                     </form>
+
+                                    {/* FRAGMENTOS OCULTOS — fora do form, só para clientes existentes */}
+                                    {editingClient && (
+                                        <div className="mt-8 p-4 border border-white/10 rounded space-y-4">
+                                            <div className="flex justify-between items-center flex-wrap gap-3">
+                                                <h3 className="text-white text-xs uppercase tracking-widest">Fragmentos Ocultos</h3>
+                                                <label className="flex items-center gap-3 cursor-pointer">
+                                                    <span className="text-xs text-white/40">Acesso Liberado (pagamento confirmado)</span>
+                                                    <div className={`relative w-10 h-5 rounded-full transition-colors ${extrasUnlocked ? 'bg-catarse-gold' : 'bg-white/10'}`}
+                                                        onClick={() => setExtrasUnlocked(v => !v)}>
+                                                        <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${extrasUnlocked ? 'left-5' : 'left-0.5'}`} />
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            {/* Adicionar fragmento */}
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <input className="bg-black border border-white/10 p-2 rounded text-white text-xs col-span-2" placeholder="Título" value={newExtra.title} onChange={e => setNewExtra(p => ({...p, title: e.target.value}))} />
+                                                <input className="bg-black border border-white/10 p-2 rounded text-white text-xs" placeholder="URL Thumbnail" value={newExtra.thumb} onChange={e => setNewExtra(p => ({...p, thumb: e.target.value}))} />
+                                                <input className="bg-black border border-white/10 p-2 rounded text-white text-xs" placeholder="Duração (ex: 2min)" value={newExtra.duration} onChange={e => setNewExtra(p => ({...p, duration: e.target.value}))} />
+                                                <input className="bg-black border border-white/10 p-2 rounded text-white text-xs col-span-2" placeholder="URL do Vídeo (opcional)" value={newExtra.video_url} onChange={e => setNewExtra(p => ({...p, video_url: e.target.value}))} />
+                                                <button type="button" onClick={() => { if (!newExtra.title) return; setExtras(p => [...p, newExtra]); setNewExtra({title:"",thumb:"",video_url:"",duration:""}); }}
+                                                    className="col-span-2 bg-white/10 hover:bg-white/20 text-white text-xs py-2 rounded transition-colors">+ Adicionar Fragmento</button>
+                                            </div>
+                                            {/* Lista */}
+                                            {extras.map((ex, i) => (
+                                                <div key={i} className="flex items-center justify-between gap-2 bg-black/30 p-2 rounded text-xs">
+                                                    <span className="text-white/60">{ex.title} <span className="text-catarse-gold">({ex.duration})</span></span>
+                                                    <button type="button" onClick={() => setExtras(p => p.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-300 text-[10px]">Remover</button>
+                                                </div>
+                                            ))}
+                                            <button type="button" onClick={saveExtras} disabled={savingExtras}
+                                                className="w-full bg-catarse-gold text-black py-2 font-bold uppercase text-xs rounded hover:bg-white transition-colors disabled:opacity-50">
+                                                {savingExtras ? "Salvando..." : "Salvar Fragmentos"}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="h-full flex flex-col items-center justify-center text-white/20 space-y-4">
