@@ -68,7 +68,7 @@ export default function HomePage() {
                     {/* --- MENU DESKTOP --- */}
                     <div className="hidden md:flex items-center gap-8">
                         <Link href="/sobre" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Sobre</Link>
-                        <Link href="/nichos" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Nichos</Link>
+                        <Link href="/universos" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Universos</Link>
                         <a href="#manifesto" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Manifesto</a>
                         <a href="#portfolio" className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-catarse-gold transition-colors">Cinemateca</a>
 
@@ -126,7 +126,7 @@ export default function HomePage() {
                 {isMobileMenuOpen && (
                     <div className="md:hidden absolute top-full left-0 w-full bg-catarse-black/95 backdrop-blur-xl border-b border-white/5 py-4 px-6 flex flex-col gap-4 shadow-2xl animate-fade-in">
                         <Link onClick={() => setIsMobileMenuOpen(false)} href="/sobre" className="text-sm uppercase tracking-[0.2em] text-white/80 hover:text-catarse-gold py-2 border-b border-white/5">Sobre</Link>
-                        <Link onClick={() => setIsMobileMenuOpen(false)} href="/nichos" className="text-sm uppercase tracking-[0.2em] text-white/80 hover:text-catarse-gold py-2 border-b border-white/5">Nichos</Link>
+                        <Link onClick={() => setIsMobileMenuOpen(false)} href="/universos" className="text-sm uppercase tracking-[0.2em] text-white/80 hover:text-catarse-gold py-2 border-b border-white/5">Universos</Link>
                         <a onClick={() => setIsMobileMenuOpen(false)} href="#manifesto" className="text-sm uppercase tracking-[0.2em] text-white/80 hover:text-catarse-gold py-2 border-b border-white/5">Manifesto</a>
                         <a onClick={() => setIsMobileMenuOpen(false)} href="#portfolio" className="text-sm uppercase tracking-[0.2em] text-white/80 hover:text-catarse-gold py-2 border-b border-white/5">Cinemateca</a>
                         <Link onClick={() => setIsMobileMenuOpen(false)} href="/download" className="text-sm uppercase tracking-[0.2em] text-catarse-gold hover:text-white py-2 flex items-center gap-2">
@@ -355,7 +355,7 @@ export default function HomePage() {
                         <ul className="space-y-4 text-xs text-white/40">
                             <li><a href="#" className="hover:text-catarse-gold transition-colors">Home</a></li>
                             <li><Link href="/sobre" className="hover:text-catarse-gold transition-colors">Sobre</Link></li>
-                            <li><Link href="/nichos" className="hover:text-catarse-gold transition-colors">Nichos</Link></li>
+                            <li><Link href="/universos" className="hover:text-catarse-gold transition-colors">Universos</Link></li>
                             <li><a href="#manifesto" className="hover:text-catarse-gold transition-colors">Manifesto</a></li>
                             <li><Link href="/login" className="hover:text-catarse-gold transition-colors">Área do Cliente</Link></li>
                             <li><Link href="/download" className="hover:text-catarse-gold transition-colors">Baixar App</Link></li>
