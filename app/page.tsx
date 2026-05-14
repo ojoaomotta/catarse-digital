@@ -159,7 +159,7 @@ export default function HomePage() {
                 <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
                     <div className="md:col-span-5 relative aspect-[3/4] group overflow-hidden">
                         <Image
-                            src="/DSC01666.jpg"
+                            src="/ocean.jpg"
                             alt="Catarse Film"
                             fill
                             className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
@@ -174,8 +174,8 @@ export default function HomePage() {
                         <div className="space-y-6 text-white/60 font-light leading-relaxed text-sm md:text-base text-justify">
                             <p>
                                 Vai muito além de narrativas com alta qualidade, exploramos o sentimento do momento.
-                                As nuances que residem entre o momento e a captura. pequenos fragmentos, detalhes
-                                minuciosos que conduz o espectador a sentir cada emoção. literalmente uma “catarse”.
+                                As nuances que residem entre o momento e a captura. Pequenos fragmentos, detalhes
+                                minuciosos que conduzem o espectador a sentir cada emoção. Literalmente uma “catarse”.
                             </p>
                         </div>
                     </div>
@@ -220,26 +220,23 @@ export default function HomePage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
                         <div className="p-8 border border-white/5 hover:border-catarse-gold/30 transition-colors bg-white/[0.02]">
                             <span className="text-4xl font-serif italic text-catarse-gold mb-4 block">01</span>
-                            <h3 className="text-lg uppercase tracking-widest text-white mb-4">Invisibilidade</h3>
+                            <h3 className="text-lg uppercase tracking-widest text-white mb-4">O Olhar</h3>
                             <p className="text-white/40 text-sm leading-relaxed">
-                                Nossa equipe trabalha como sombras. Sem luzes fortes no rosto dos convidados,
-                                sem equipamentos gigantes. Capturamos a verdade sem interferir nela.
+                                Nosso pilar principal é a forma como capturamos cada take. Preservamos sempre o olhar aguçado, sensível e atento para que nada passe despercebido. Vemos arte em tudo.
                             </p>
                         </div>
                         <div className="p-8 border border-white/5 hover:border-catarse-gold/30 transition-colors bg-white/[0.02]">
                             <span className="text-4xl font-serif italic text-catarse-gold mb-4 block">02</span>
-                            <h3 className="text-lg uppercase tracking-widest text-white mb-4">Color Grading</h3>
+                            <h3 className="text-lg uppercase tracking-widest text-white mb-4">Estrutura</h3>
                             <p className="text-white/40 text-sm leading-relaxed">
-                                Nossa identidade visual é inspirada nas películas Kodak Vision3.
-                                Cores profundas, tons de pele naturais e um visual atemporal que não envelhece.
+                                Nossos equipamentos de filmagem e de áudio são de altíssima qualidade, os microfones capturam sons com mais de 250 metros de distância. Filmamos em s-log.
                             </p>
                         </div>
                         <div className="p-8 border border-white/5 hover:border-catarse-gold/30 transition-colors bg-white/[0.02]">
                             <span className="text-4xl font-serif italic text-catarse-gold mb-4 block">03</span>
-                            <h3 className="text-lg uppercase tracking-widest text-white mb-4">Ecossistema</h3>
+                            <h3 className="text-lg uppercase tracking-widest text-white mb-4">Color Grading</h3>
                             <p className="text-white/40 text-sm leading-relaxed">
-                                Muito além de um link. Oferecemos uma plataforma exclusiva onde você acompanha a edição,
-                                interage com o processo criativo e assiste à sua estreia.
+                                Nossa missão é transformar os takes em filme, por isso nosso estilo de edição é realizado através de programas de edição que Hollywood utiliza para a edição de filmes americanos, como por exemplo: Avatar 3, Thor Ragnarok e Planeta dos Macacos. Priorizamos um estilo documental com cores profundas e tom de pele natural.
                             </p>
                         </div>
                     </div>
@@ -252,9 +249,9 @@ export default function HomePage() {
 
                     {/* Texto (Esquerda) */}
                     <div className="md:w-1/2 space-y-6 relative z-10 text-center md:text-left">
-                        <span className="text-catarse-gold text-xs uppercase tracking-widest block">Catarse Mobile</span>
+                        <span className="text-catarse-gold text-xs uppercase tracking-widest block">Aplicativo Catarse</span>
                         <h2 className="text-3xl md:text-5xl font-serif italic text-white leading-tight">
-                            Leve o cinema<br />para o seu bolso.
+                            Catarse pertinho<br />de você.
                         </h2>
                         <p className="text-white/60 font-light leading-relaxed max-w-md mx-auto md:mx-0">
                             Acompanhe o status da edição em tempo real, receba notificações e assista à sua estreia diretamente pelo nosso aplicativo exclusivo.
@@ -303,8 +300,7 @@ export default function HomePage() {
                 <div className="container mx-auto px-6 text-center relative z-10">
                     <h2 className="text-4xl md:text-6xl font-serif italic mb-8">Sua história merece ser cinema.</h2>
                     <p className="max-w-xl mx-auto text-catarse-moss/70 font-medium mb-12">
-                        Nossa agenda é limitada a 20 casamentos por ano para garantir a exclusividade do processo artesanal.
-                        Verifique a disponibilidade para a sua data.
+                        Nossa agenda é limitada a 30 trabalhos por ano para garantir exclusividade do processo artesanal. Verifique a disponibilidade para a sua data.
                     </p>
                     <a
                         href="https://wa.me/5522999734867"
@@ -326,7 +322,7 @@ export default function HomePage() {
                         </div>
                         <p className="text-white/40 text-xs leading-relaxed max-w-xs mx-auto md:mx-0">
                             Estúdio de cinema documental focado em casamentos e histórias de família.
-                            Baseado no Brasil, disponível para o mundo.
+                            Fundada no Brasil, disponível para o mundo.
                         </p>
                     </div>
                     <div>
@@ -343,7 +339,6 @@ export default function HomePage() {
                         <h4 className="text-white text-xs uppercase tracking-widest mb-6">Contato</h4>
                         <ul className="space-y-4 text-xs text-white/40">
                             <li><a href="https://www.instagram.com/catarsefilm/" className="hover:text-catarse-gold transition-colors">Instagram</a></li>
-                            <li><a href="https://vimeo.com" className="hover:text-catarse-gold transition-colors">Vimeo</a></li>
                             <li><a href="https://wa.me/5522999734867" className="hover:text-catarse-gold transition-colors">WhatsApp</a></li>
                             <li>contatocatarsefilm@gmail.com</li>
                         </ul>
