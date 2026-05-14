@@ -40,6 +40,7 @@ export default function AdminPanel() {
     // Extras / Fragmentos Ocultos
     const [extras, setExtras] = useState<{title: string; thumb: string; video_url: string; duration: string}[]>([]);
     const [newExtra, setNewExtra] = useState({title: "", thumb: "", video_url: "", duration: ""});
+    const [editingExtraIndex, setEditingExtraIndex] = useState<number | null>(null);
     const [extrasUnlocked, setExtrasUnlocked] = useState(false);
     const [savingExtras, setSavingExtras] = useState(false);
 
@@ -76,6 +77,8 @@ export default function AdminPanel() {
         setClientBriefingData(null);
         setExtras([]);
         setExtrasUnlocked(false);
+        setEditingExtraIndex(null);
+        setNewExtra({title: "", thumb: "", video_url: "", duration: ""});
     }
 
     const startEdit = (client: any) => {
@@ -96,6 +99,8 @@ export default function AdminPanel() {
         setClientBriefingData(client.briefing_data || null);
         setExtras(client.extras || []);
         setExtrasUnlocked(client.extras_unlocked || false);
+        setEditingExtraIndex(null);
+        setNewExtra({title: "", thumb: "", video_url: "", duration: ""});
     };
 
     const fetchClients = async () => {
@@ -463,14 +468,31 @@ export default function AdminPanel() {
                                                 <input className="bg-black border border-white/10 p-2 rounded text-white text-xs" placeholder="URL Thumbnail" value={newExtra.thumb} onChange={e => setNewExtra(p => ({...p, thumb: e.target.value}))} />
                                                 <input className="bg-black border border-white/10 p-2 rounded text-white text-xs" placeholder="Duração (ex: 2min)" value={newExtra.duration} onChange={e => setNewExtra(p => ({...p, duration: e.target.value}))} />
                                                 <input className="bg-black border border-white/10 p-2 rounded text-white text-xs col-span-2" placeholder="URL do Vídeo (opcional)" value={newExtra.video_url} onChange={e => setNewExtra(p => ({...p, video_url: e.target.value}))} />
-                                                <button type="button" onClick={() => { if (!newExtra.title) return; setExtras(p => [...p, newExtra]); setNewExtra({title:"",thumb:"",video_url:"",duration:""}); }}
-                                                    className="col-span-2 bg-white/10 hover:bg-white/20 text-white text-xs py-2 rounded transition-colors">+ Adicionar Fragmento</button>
+                                                <button type="button" onClick={() => { 
+                                                    if (!newExtra.title) return; 
+                                                    if (editingExtraIndex !== null) {
+                                                        setExtras(p => { const u = [...p]; u[editingExtraIndex] = newExtra; return u; });
+                                                        setEditingExtraIndex(null);
+                                                    } else {
+                                                        setExtras(p => [...p, newExtra]); 
+                                                    }
+                                                    setNewExtra({title:"",thumb:"",video_url:"",duration:""}); 
+                                                }}
+                                                    className="col-span-2 bg-white/10 hover:bg-white/20 text-white text-xs py-2 rounded transition-colors">
+                                                    {editingExtraIndex !== null ? "Salvar Edição" : "+ Adicionar Fragmento"}
+                                                </button>
                                             </div>
                                             {/* Lista */}
                                             {extras.map((ex, i) => (
-                                                <div key={i} className="flex items-center justify-between gap-2 bg-black/30 p-2 rounded text-xs">
+                                                <div key={i} className={`flex items-center justify-between gap-2 p-2 rounded text-xs ${editingExtraIndex === i ? "bg-catarse-gold/10 border border-catarse-gold/30" : "bg-black/30"}`}>
                                                     <span className="text-white/60">{ex.title} <span className="text-catarse-gold">({ex.duration})</span></span>
-                                                    <button type="button" onClick={() => setExtras(p => p.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-300 text-[10px]">Remover</button>
+                                                    <div className="flex items-center gap-3">
+                                                        <button type="button" onClick={() => { setNewExtra(ex); setEditingExtraIndex(i); }} className="text-blue-400 hover:text-blue-300 text-[10px]">Editar</button>
+                                                        <button type="button" onClick={() => { 
+                                                            setExtras(p => p.filter((_, j) => j !== i));
+                                                            if (editingExtraIndex === i) { setEditingExtraIndex(null); setNewExtra({title:"",thumb:"",video_url:"",duration:""}); }
+                                                        }} className="text-red-400 hover:text-red-300 text-[10px]">Remover</button>
+                                                    </div>
                                                 </div>
                                             ))}
                                             <button type="button" onClick={saveExtras} disabled={savingExtras}
