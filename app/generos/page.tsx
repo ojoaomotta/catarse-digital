@@ -3,6 +3,9 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+
+const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 const GENEROS = [
     {
@@ -23,8 +26,8 @@ const GENEROS = [
         logo: "/logo-catarseensaios.png",
         tagline: "Ensaios Externos & Familiares",
         description: "Voltado para ensaios externos e internos, ensaios familiares — aniversários, Dia das Mães, Dia dos Pais, Dia das Crianças, Dia dos Namorados e muito mais.",
-        video: "/nicho-ensaios.mp4",
-        videoType: "video/mp4",
+        video: "https://vz-fe74dcfc-f5b.b-cdn.net/8abd0dd2-a3c4-4787-b0ad-76ac6ba62673/playlist.m3u8",
+        videoType: "application/x-mpegURL",
         color: "from-green-900/20",
     },
     {
@@ -34,8 +37,8 @@ const GENEROS = [
         logo: "/logo-catarsekids.png",
         tagline: "Para os Pequeninos",
         description: "Tudo que envolva crianças. Ensaios infantis, comemoração de aniversário, batizado infantil e muito mais. O olhar curioso dos pequenos merece ser eternizado.",
-        video: "/nicho-kids.mp4",
-        videoType: "video/mp4",
+        video: "https://vz-fe74dcfc-f5b.b-cdn.net/220cbd49-25ad-4802-acc8-e7b41077733b/playlist.m3u8",
+        videoType: "application/x-mpegURL",
         color: "from-pink-900/20",
     },
     {
@@ -64,17 +67,9 @@ const GENEROS = [
 
 export default function GenerosPage() {
     const [active, setActive] = useState(GENEROS[0]);
-    const videoRef = useRef<HTMLVideoElement>(null);
 
     const handleSelect = (genero: typeof GENEROS[0]) => {
         setActive(genero);
-        // Reset video on tab change
-        setTimeout(() => {
-            if (videoRef.current) {
-                videoRef.current.load();
-                videoRef.current.play().catch(() => {});
-            }
-        }, 100);
     };
 
     return (
@@ -176,17 +171,14 @@ export default function GenerosPage() {
                     {/* Player de vídeo */}
                     {active.video ? (
                         <div className="relative aspect-video w-full max-w-4xl mx-auto bg-black rounded-xl overflow-hidden border border-white/10 shadow-2xl">
-                            <video
-                                ref={videoRef}
-                                controls
-                                playsInline
-                                preload="metadata"
-                                className="w-full h-full object-contain"
+                            <ReactPlayer
                                 key={active.video}
-                            >
-                                <source src={active.video} type={active.videoType ?? "video/mp4"} />
-                                Seu navegador não suporta este formato de vídeo.
-                            </video>
+                                url={active.video}
+                                controls
+                                width="100%"
+                                height="100%"
+                                style={{ position: "absolute", top: 0, left: 0 }}
+                            />
                         </div>
                     ) : (
                         <div className="relative aspect-video w-full max-w-4xl mx-auto bg-black/40 rounded-xl border border-white/5 flex flex-col items-center justify-center gap-4">
