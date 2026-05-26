@@ -25,11 +25,13 @@ export default function PremierePage() {
     const [played, setPlayed] = useState(0);
     const [duration, setDuration] = useState(0);
     const [showControls, setShowControls] = useState(false);
+    const [isIOS, setIsIOS] = useState(false);
 
     const playerRef = useRef<any>(null);
     const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
+        setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent));
         const fetchData = async () => {
             const storedUser = localStorage.getItem("catarse_user");
             if (!storedUser) {
@@ -148,7 +150,16 @@ export default function PremierePage() {
                             onDuration={setDuration}
                             onEnded={() => setIsPlaying(false)}
                             style={{ position: 'absolute', top: 0, left: 0 }}
-                            config={{ file: { forceHLS: true } }}
+                            config={{
+                                file: {
+                                    forceHLS: user.video_url?.includes(".m3u8") && !isIOS,
+                                    attributes: {
+                                        playsInline: true,
+                                        webkitPlaysInline: "true",
+                                        controlsList: "nodownload"
+                                    }
+                                }
+                            }}
                         />
 
                         {!isPlaying && (
