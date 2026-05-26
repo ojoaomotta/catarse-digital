@@ -22,7 +22,7 @@ export default function LinksPage() {
         if (videoRef.current) {
             videoRef.current.muted = true;
             videoRef.current.play().catch(() => {
-                /* autoplay blocked or failed, handled gracefully by poster */
+                /* autoplay blocked or failed */
             });
         }
     }, []);
@@ -109,7 +109,6 @@ export default function LinksPage() {
                     playsInline
                     autoPlay
                     preload="auto"
-                    poster="/filme1.jpg"
                     className="absolute inset-0 w-full h-full object-cover"
                 >
                     <source src="/herobg.mp4" type="video/mp4" />
