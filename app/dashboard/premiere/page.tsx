@@ -116,6 +116,65 @@ export default function PremierePage() {
         }
     };
 
+    // Controle de Tela Cheia Customizado (Cross-browser com suporte total a Safari/Chrome/Firefox/iOS)
+    const playerContainerRef = useRef<HTMLDivElement | null>(null);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(
+                !!document.fullscreenElement ||
+                !!(document as any).webkitFullscreenElement ||
+                !!(document as any).mozFullScreenElement ||
+                !!(document as any).msFullscreenElement
+            );
+        };
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+        document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+        document.addEventListener("msfullscreenchange", handleFullscreenChange);
+
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+            document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+            document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+            document.removeEventListener("msfullscreenchange", handleFullscreenChange);
+        };
+    }, []);
+
+    const toggleFullscreen = () => {
+        if (!playerContainerRef.current) return;
+
+        const elem = playerContainerRef.current as any;
+
+        if (!document.fullscreenElement && 
+            !(document as any).webkitFullscreenElement && 
+            !(document as any).mozFullScreenElement && 
+            !(document as any).msFullscreenElement) {
+            
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        } else {
+            const doc = document as any;
+            if (doc.exitFullscreen) {
+                doc.exitFullscreen();
+            } else if (doc.webkitExitFullscreen) {
+                doc.webkitExitFullscreen();
+            } else if (doc.mozCancelFullScreen) {
+                doc.mozCancelFullScreen();
+            } else if (doc.msExitFullscreen) {
+                doc.msExitFullscreen();
+            }
+        }
+    };
+
     const handleMouseMove = () => {
         setShowControls(true);
         if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
@@ -167,7 +226,8 @@ export default function PremierePage() {
             </nav>
 
             <div
-                className="w-full h-[60vh] md:h-[85vh] relative group flex items-center justify-center bg-zinc-900 overflow-hidden"
+                ref={playerContainerRef}
+                className={`w-full relative group flex items-center justify-center bg-black overflow-hidden transition-all duration-300 ${isFullscreen ? 'h-screen' : 'h-[60vh] md:h-[85vh]'}`}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={() => setShowControls(false)}
                 onClick={() => {
@@ -263,6 +323,24 @@ export default function PremierePage() {
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <span className="text-catarse-gold/50 text-[10px]">4K HDR</span>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleFullscreen();
+                                        }}
+                                        className="hover:text-catarse-gold transition-colors p-1"
+                                        title={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+                                    >
+                                        {isFullscreen ? (
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9V4.5M15 9h4.5M15 9l5.25-5.25M15 15v4.5M15 15h4.5M15 15l5.25 5.25" />
+                                            </svg>
+                                        ) : (
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m5.25 11.25v-4.5m0 4.5h-4.5m4.5 0-5.25-5.25" />
+                                            </svg>
+                                        )}
+                                    </button>
                                 </div>
                             </div>
                         </div>
