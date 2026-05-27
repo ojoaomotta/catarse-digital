@@ -4,6 +4,45 @@ import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
 
+// Funções auxiliares para parse seguro de JSON vindo do banco de dados (evitando falhas em registros legados)
+const parseJsonIfNeeded = (val: any): any => {
+    if (typeof val === "string") {
+        try {
+            return JSON.parse(val);
+        } catch (e) {
+            return val;
+        }
+    }
+    return val;
+};
+
+const getSafeArray = (val: any): any[] => {
+    if (val === null || val === undefined) return [];
+    const parsed = parseJsonIfNeeded(val);
+    return Array.isArray(parsed) ? parsed : [];
+};
+
+const getSafeObject = (val: any): Record<string, any> | null => {
+    if (val === null || val === undefined) return null;
+    const parsed = parseJsonIfNeeded(val);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return parsed;
+    }
+    return null;
+};
+
+const renderSafeValue = (val: any): string => {
+    if (val === null || val === undefined) return "";
+    if (typeof val === "object") {
+        try {
+            return JSON.stringify(val);
+        } catch {
+            return "[Objeto]";
+        }
+    }
+    return String(val);
+};
+
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -147,19 +186,19 @@ export default function AdminPanel() {
         setEditingClient(client);
         setIsCreating(false);
         setFormData({
-            name: client.name,
+            name: client.name || "",
             username: client.username || "",
             password: client.password || "",
-            project_name: client.project_name,
-            status: client.status,
+            project_name: client.project_name || "",
+            status: client.status || "Contrato",
             video_url: client.video_url || "",
             video_cover: client.video_cover || "",
             download_url: client.download_url || "",
             contract_url: client.contract_url || ""
         });
-        setBriefingQuestions(client.briefing_questions || []);
-        setClientBriefingData(client.briefing_data || null);
-        setExtras(client.extras || []);
+        setBriefingQuestions(getSafeArray(client.briefing_questions));
+        setClientBriefingData(getSafeObject(client.briefing_data));
+        setExtras(getSafeArray(client.extras));
         setExtrasUnlocked(client.extras_unlocked || false);
         setEditingExtraIndex(null);
         setNewExtra({ title: "", thumb: "", video_url: "", duration: "" });
@@ -643,7 +682,7 @@ export default function AdminPanel() {
                                                             <input
                                                                 className="w-full bg-[#050505] border border-white/10 p-2 rounded text-white text-xs font-bold focus:border-[#C9A96E] focus:outline-none"
                                                                 placeholder="Título da Seção (Ex: Cena 01 - Entrada da Noiva)"
-                                                                value={q.title}
+                                                                value={q?.title || ""}
                                                                 onChange={e => {
                                                                     const u = [...briefingQuestions];
                                                                     u[i].title = e.target.value;
@@ -656,7 +695,7 @@ export default function AdminPanel() {
                                                                 className="w-full bg-[#050505] border border-white/10 p-2 rounded text-white text-xs resize-none focus:border-[#C9A96E] focus:outline-none"
                                                                 rows={2}
                                                                 placeholder="Descreva a pergunta ou instrução que o cliente responderá..."
-                                                                value={q.question}
+                                                                value={q?.question || ""}
                                                                 onChange={e => {
                                                                     const u = [...briefingQuestions];
                                                                     u[i].question = e.target.value;
@@ -686,7 +725,7 @@ export default function AdminPanel() {
                                                             <p className="text-[#C9A96E] text-[10px] font-bold uppercase tracking-wider">
                                                                 {briefingQuestions[i]?.title || key}
                                                             </p>
-                                                            <p className="text-white text-sm leading-relaxed whitespace-pre-wrap">{val}</p>
+                                                            <p className="text-white text-sm leading-relaxed whitespace-pre-wrap">{renderSafeValue(val)}</p>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -777,14 +816,14 @@ export default function AdminPanel() {
 
                                             {/* Lista de fragmentos adicionados */}
                                             <div className="space-y-2">
-                                                {extras.map((ex, i) => (
+                                                {getSafeArray(extras).map((ex, i) => (
                                                     <div key={i} className={`flex items-center justify-between gap-3 p-3 rounded-lg border text-xs ${editingExtraIndex === i ? "bg-[#C9A96E]/5 border-[#C9A96E]/30" : "bg-black/30 border-white/5"}`}>
                                                         <div className="flex flex-col">
-                                                            <span className="text-white font-medium">{ex.title}</span>
-                                                            <span className="text-[#C9A96E] text-[10px] mt-0.5 font-mono">{ex.duration}</span>
+                                                            <span className="text-white font-medium">{ex?.title || "Sem título"}</span>
+                                                            <span className="text-[#C9A96E] text-[10px] mt-0.5 font-mono">{ex?.duration || ""}</span>
                                                         </div>
                                                         <div className="flex items-center gap-3">
-                                                            <button type="button" onClick={() => { setNewExtra(ex); setEditingExtraIndex(i); }} className="text-[#C9A96E] hover:text-white text-[10px] uppercase font-bold tracking-wider">Editar</button>
+                                                            <button type="button" onClick={() => { setNewExtra(ex || { title: "", thumb: "", video_url: "", duration: "" }); setEditingExtraIndex(i); }} className="text-[#C9A96E] hover:text-white text-[10px] uppercase font-bold tracking-wider">Editar</button>
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
@@ -794,7 +833,7 @@ export default function AdminPanel() {
                                                                         setNewExtra({ title: "", thumb: "", video_url: "", duration: "" });
                                                                     }
                                                                 }}
-                                                                className="text-red-400 hover:text-red-300 text-[10px] uppercase font-bold tracking-wider"
+                                                                className="text-red-400 text-[10px] uppercase font-bold tracking-wider"
                                                             >
                                                                 Remover
                                                             </button>
