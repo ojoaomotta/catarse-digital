@@ -220,6 +220,7 @@ export default function PremierePage() {
                     <a
                         href={user.download_url || "#"}
                         target="_blank"
+                        download
                         className={`flex items-center justify-between p-4 border rounded transition-colors group ${!user.download_url ? 'border-white/5 bg-white/5 cursor-not-allowed opacity-50' : 'border-white/20 hover:border-catarse-gold hover:bg-white/5 cursor-pointer'}`}
                     >
                         <div className="flex items-center gap-4">
