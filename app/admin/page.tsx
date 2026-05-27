@@ -537,7 +537,7 @@ export default function AdminPanel() {
                                             </h2>
                                         </div>
                                         <span className="text-[10px] uppercase tracking-widest text-white/30 hidden sm:inline">
-                                            {isCreating ? "Cadastro" : "Identificador: " + editingClient.id.substring(0, 8)}
+                                            {isCreating ? "Cadastro" : "Identificador: " + String(editingClient.id).substring(0, 8)}
                                         </span>
                                     </div>
 
