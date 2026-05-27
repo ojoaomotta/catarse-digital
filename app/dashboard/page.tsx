@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 // As etapas do processo cinematográfico
 const STEPS = [
@@ -23,10 +29,32 @@ export default function Dashboard() {
 
         if (!storedUser) {
             router.replace("/");
-        } else {
-            setUser(JSON.parse(storedUser));
-            setIsLoading(false);
+            return;
         }
+
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser); // Define logo o estado inicial para evitar tela preta/atrasos
+
+        const fetchLatestUser = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from("clients")
+                    .select("*")
+                    .eq("id", parsedUser.id)
+                    .single();
+
+                if (!error && data) {
+                    setUser(data);
+                    localStorage.setItem("catarse_user", JSON.stringify(data));
+                }
+            } catch (err) {
+                console.error("Erro ao sincronizar dados do cliente com o Supabase:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchLatestUser();
     }, [router]);
 
     const handleLogout = () => {
@@ -144,48 +172,68 @@ export default function Dashboard() {
                     })}
                 </div>
 
-                {/* --- BOTÕES DE AÇÃO RÁPIDA (LAYOUT BENTO GRID) --- */}
-                {/* 
-                    CORREÇÃO DE DESIGN: 
-                    Mantemos grid-cols-2, mas o último botão (Extras) ganha 'md:col-span-2'
-                    para ocupar a largura total em baixo, criando uma pirâmide invertida equilibrada.
-                */}
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 pb-12">
+                {/* --- BOTÕES DE AÇÃO RÁPIDA (LAYOUT DINÂMICO BENTO GRID) --- */}
+                {(() => {
+                    const showBriefing = user.briefing_enabled !== false;
+                    const showExtras = user.extras_enabled !== false;
 
-                    {/* Botão Briefing */}
-                    <button
-                        onClick={() => router.push('/dashboard/briefing')}
-                        className="border border-white/10 p-6 rounded text-left hover:bg-white/5 transition-colors group relative overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-catarse-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Briefing</span>
-                        <span className="font-serif italic text-2xl text-white/80 relative z-10">Sua História</span>
-                    </button>
+                    let briefingClass = "border border-white/10 p-6 rounded text-left hover:bg-white/5 transition-all duration-300 group relative overflow-hidden";
+                    let laboratorioClass = "border border-white/10 p-6 rounded text-left hover:bg-white/5 transition-all duration-300 group relative overflow-hidden";
+                    let extrasClass = "border border-white/10 p-6 rounded text-left hover:bg-white/5 transition-all duration-300 group relative overflow-hidden flex flex-col";
 
-                    {/* Botão Laboratório */}
-                    <button
-                        onClick={() => router.push('/dashboard/laboratorio')}
-                        className="border border-white/10 p-6 rounded text-left hover:bg-white/5 transition-colors group relative overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-catarse-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Showcase</span>
-                        <span className="font-serif italic text-2xl text-white/80 relative z-10">Laboratório de Cor</span>
-                    </button>
+                    if (showBriefing && showExtras) {
+                        // Layout original: Briefing e Lab são meio-meio, Extras é full-width embaixo
+                        extrasClass += " md:col-span-2 md:items-center md:text-center";
+                    } else if (!showBriefing && showExtras) {
+                        // Apenas Lab e Extras: ficam lado a lado (meio-meio)
+                    } else if (showBriefing && !showExtras) {
+                        // Apenas Briefing e Lab: ficam lado a lado (meio-meio)
+                    } else {
+                        // Apenas Laboratório ativo: fica full-width e centralizado
+                        laboratorioClass += " md:col-span-2 md:items-center md:text-center";
+                    }
 
-                    {/* Botão EXTRAS (Destaque Full Width) */}
-                    <button
-                        onClick={() => router.push('/dashboard/extras')}
-                        className="border border-white/10 p-6 rounded text-left hover:bg-white/5 transition-colors group relative overflow-hidden md:col-span-2 flex flex-col md:items-center md:text-center"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-catarse-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Upsell</span>
-                        <span className="font-serif italic text-2xl text-white/80 relative z-10">Fragmentos Ocultos</span>
-                        {/* Texto extra para preencher o espaço no desktop */}
-                        <p className="hidden md:block text-white/40 text-sm mt-2 max-w-md relative z-10">
-                            Acesse cenas deletadas e momentos exclusivos que não entraram no corte final.
-                        </p>
-                    </button>
-                </div>
+                    return (
+                        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 pb-12">
+                            {/* Botão Briefing */}
+                            {showBriefing && (
+                                <button
+                                    onClick={() => router.push('/dashboard/briefing')}
+                                    className={briefingClass}
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-r from-catarse-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Briefing</span>
+                                    <span className="font-serif italic text-2xl text-white/80 relative z-10">Sua História</span>
+                                </button>
+                            )}
+
+                            {/* Botão Laboratório */}
+                            <button
+                                onClick={() => router.push('/dashboard/laboratorio')}
+                                className={laboratorioClass}
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-catarse-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Showcase</span>
+                                <span className="font-serif italic text-2xl text-white/80 relative z-10">Laboratório de Cor</span>
+                            </button>
+
+                            {/* Botão EXTRAS (Destaque Full Width se houver 3 elementos, senão meio-meio) */}
+                            {showExtras && (
+                                <button
+                                    onClick={() => router.push('/dashboard/extras')}
+                                    className={extrasClass}
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-r from-catarse-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Upsell</span>
+                                    <span className="font-serif italic text-2xl text-white/80 relative z-10">Fragmentos Ocultos</span>
+                                    <p className="hidden md:block text-white/40 text-sm mt-2 max-w-md relative z-10">
+                                        Acesse cenas deletadas e momentos exclusivos que não entraram no corte final.
+                                    </p>
+                                </button>
+                            )}
+                        </div>
+                    );
+                })()}
 
             </main>
         </div>

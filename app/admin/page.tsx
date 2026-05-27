@@ -100,6 +100,10 @@ export default function AdminPanel() {
     const [uploading, setUploading] = useState(false);
     const [uploadField, setUploadField] = useState<string | null>(null); // Rastreia qual campo está fazendo upload
 
+    // Ativação / Desativação de Recursos
+    const [briefingEnabled, setBriefingEnabled] = useState(true);
+    const [extrasEnabled, setExtrasEnabled] = useState(true);
+
     // 1. Carregar a senha atual do banco ao montar
     useEffect(() => {
         const fetchDbPassword = async () => {
@@ -200,6 +204,8 @@ export default function AdminPanel() {
         setClientBriefingData(getSafeObject(client.briefing_data));
         setExtras(getSafeArray(client.extras));
         setExtrasUnlocked(client.extras_unlocked || false);
+        setBriefingEnabled(client.briefing_enabled !== false);
+        setExtrasEnabled(client.extras_enabled !== false);
         setEditingExtraIndex(null);
         setNewExtra({ title: "", thumb: "", video_url: "", duration: "" });
     };
@@ -213,6 +219,8 @@ export default function AdminPanel() {
         setClientBriefingData(null);
         setExtras([]);
         setExtrasUnlocked(false);
+        setBriefingEnabled(true);
+        setExtrasEnabled(true);
         setEditingExtraIndex(null);
         setNewExtra({ title: "", thumb: "", video_url: "", duration: "" });
     };
@@ -224,7 +232,12 @@ export default function AdminPanel() {
             return;
         }
 
-        const payload = { ...formData, briefing_questions: briefingQuestions };
+        const payload = { 
+            ...formData, 
+            briefing_questions: briefingQuestions,
+            briefing_enabled: briefingEnabled,
+            extras_enabled: extrasEnabled
+        };
 
         if (editingClient) {
             const { error } = await supabase
@@ -567,6 +580,35 @@ export default function AdminPanel() {
                                                     <option value="Color Grading">Em Color Grading (Cor)</option>
                                                     <option value="Finalizado">Finalizado / Pronto para Estreia</option>
                                                 </select>
+                                            </div>
+
+                                            {/* Ativação / Desativação do Briefing e Fragmentos Ocultos */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-white/5 pt-4 mt-2">
+                                                <div className="flex items-center justify-between p-3.5 bg-black/40 rounded-xl border border-white/5">
+                                                    <div className="space-y-0.5">
+                                                        <span className="text-[10px] uppercase tracking-wider text-white/50 block font-bold">Briefing Habilitado</span>
+                                                        <span className="text-[8px] text-white/30 block">Exibe botão de roteiro</span>
+                                                    </div>
+                                                    <label className="relative flex items-center cursor-pointer select-none">
+                                                        <input type="checkbox" checked={briefingEnabled} onChange={e => setBriefingEnabled(e.target.checked)} className="hidden" />
+                                                        <div className={`w-9 h-5 rounded-full transition-colors ${briefingEnabled ? 'bg-[#C9A96E]' : 'bg-white/10'}`}>
+                                                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${briefingEnabled ? 'left-[18px]' : 'left-0.5'}`} />
+                                                        </div>
+                                                    </label>
+                                                </div>
+
+                                                <div className="flex items-center justify-between p-3.5 bg-black/40 rounded-xl border border-white/5">
+                                                    <div className="space-y-0.5">
+                                                        <span className="text-[10px] uppercase tracking-wider text-white/50 block font-bold">Extras Habilitados</span>
+                                                        <span className="text-[8px] text-white/30 block">Exibe botão de fragmentos</span>
+                                                    </div>
+                                                    <label className="relative flex items-center cursor-pointer select-none">
+                                                        <input type="checkbox" checked={extrasEnabled} onChange={e => setExtrasEnabled(e.target.checked)} className="hidden" />
+                                                        <div className={`w-9 h-5 rounded-full transition-colors ${extrasEnabled ? 'bg-[#C9A96E]' : 'bg-white/10'}`}>
+                                                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${extrasEnabled ? 'left-[18px]' : 'left-0.5'}`} />
+                                                        </div>
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
 
