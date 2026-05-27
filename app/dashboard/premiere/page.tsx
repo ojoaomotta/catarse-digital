@@ -53,6 +53,69 @@ export default function PremierePage() {
         fetchData();
     }, [router]);
 
+    // Estados e função para download via JavaScript (CORS habilitado no Cloudflare R2)
+    const [downloading, setDownloading] = useState(false);
+    const [downloadProgress, setDownloadProgress] = useState(0);
+
+    const handleDownload = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (!user?.download_url || downloading) return;
+
+        setDownloading(true);
+        setDownloadProgress(0);
+
+        try {
+            const response = await fetch(user.download_url);
+            if (!response.ok) throw new Error("Erro de rede");
+            
+            const contentLength = response.headers.get("content-length");
+            const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+            
+            if (totalBytes > 0 && response.body) {
+                const reader = response.body.getReader();
+                let loadedBytes = 0;
+                const chunks = [];
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    loadedBytes += value.length;
+                    setDownloadProgress(Math.round((loadedBytes / totalBytes) * 100));
+                }
+                
+                const blob = new Blob(chunks);
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                const filename = user.download_url.split("/").pop() || `${user.project_name || "filme"}.mp4`;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } else {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                const filename = user.download_url.split("/").pop() || `${user.project_name || "filme"}.mp4`;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            console.error("Erro no download:", error);
+            // Fallback caso ocorra erro (ex: CORS ou limite de memória)
+            window.open(user.download_url, "_blank");
+        } finally {
+            setDownloading(false);
+            setDownloadProgress(0);
+        }
+    };
+
     const handleMouseMove = () => {
         setShowControls(true);
         if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
@@ -219,19 +282,29 @@ export default function PremierePage() {
                     <h3 className="text-white/40 text-xs uppercase tracking-widest mb-6">Arquivos de Entrega</h3>
                     <a
                         href={user.download_url || "#"}
-                        target="_blank"
-                        download
-                        className={`flex items-center justify-between p-4 border rounded transition-colors group ${!user.download_url ? 'border-white/5 bg-white/5 cursor-not-allowed opacity-50' : 'border-white/20 hover:border-catarse-gold hover:bg-white/5 cursor-pointer'}`}
+                        onClick={handleDownload}
+                        className={`flex items-center justify-between p-4 border rounded transition-colors group ${(!user.download_url || downloading) ? 'border-white/5 bg-[#C9A96E]/5 cursor-not-allowed opacity-50' : 'border-white/20 hover:border-catarse-gold hover:bg-white/5 cursor-pointer'}`}
                     >
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded bg-white/10 flex items-center justify-center text-white group-hover:text-catarse-gold transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                                </svg>
+                                {downloading ? (
+                                    <svg className="animate-spin h-5 w-5 text-catarse-gold" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                    </svg>
+                                )}
                             </div>
                             <div>
-                                <span className="block text-white text-sm font-medium">Download Original</span>
-                                <span className="text-white/40 text-xs">Arquivo Master</span>
+                                <span className="block text-white text-sm font-medium">
+                                    {downloading ? `Baixando... (${downloadProgress}%)` : "Download Original"}
+                                </span>
+                                <span className="text-white/40 text-xs">
+                                    {downloading ? "Aguarde o carregamento do arquivo" : "Arquivo Master"}
+                                </span>
                             </div>
                         </div>
                     </a>
