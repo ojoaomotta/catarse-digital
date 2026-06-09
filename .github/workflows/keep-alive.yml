@@ -5,17 +5,18 @@ on:
     branches:
       - main
   schedule:
-    # Roda a cada 2 dias (às 00:00 UTC)
-    - cron: '0 0 */2 * *'
+    # Roda diariamente às 05:00 UTC para garantir atividade constante
+    - cron: '0 5 * * *'
   workflow_dispatch: # Permite rodar manualmente pelo painel do GitHub
 
 jobs:
   ping-supabase:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase API
+      - name: Ping Supabase API (Real Query)
         env:
           SUPABASE_URL: 'https://ltvqklvtoufhracpwmor.supabase.co'
           SUPABASE_ANON_KEY: 'sb_publishable_uFkOQNB6eZF4FRBemyt7-A_fx9_ENMt'
         run: |
-          curl -s -o /dev/null -w "%{http_code}" -X GET "$SUPABASE_URL/rest/v1/" -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY"
+          # Faz uma consulta real no banco (tabela clients) para evitar que o Supabase entre em modo inativo
+          curl -s -o /dev/null -w "%{http_code}" -X GET "$SUPABASE_URL/rest/v1/clients?select=id&limit=1" -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY"
