@@ -151,7 +151,20 @@ export default function LinksPage() {
                     </h1>
 
                     {/* Golden Divider */}
-                    <div className="w-[60px] h-[1px] bg-[#C9A96E] mt-4 mb-2 opacity-80" />
+                    <div className="w-[60px] h-[1px] bg-[#C9A96E] mt-4 mb-3 opacity-80" />
+
+                    {/* Segmentos Atendidos */}
+                    <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-1 text-[9px] md:text-[10px] uppercase tracking-[1.5px] text-white/50 font-sans font-light max-w-[320px] px-2">
+                        <span>Casamentos</span>
+                        <span className="text-[#C9A96E] font-bold">·</span>
+                        <span>Ensaios</span>
+                        <span className="text-[#C9A96E] font-bold">·</span>
+                        <span>Infantil</span>
+                        <span className="text-[#C9A96E] font-bold">·</span>
+                        <span>Eventos</span>
+                        <span className="text-[#C9A96E] font-bold">·</span>
+                        <span>Partos</span>
+                    </div>
                 </header>
 
                 {/* BUTTONS LINK STACK */}
