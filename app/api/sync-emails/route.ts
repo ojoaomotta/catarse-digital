@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { ImapFlow, MailboxObject } from "imapflow";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-);
-
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
+
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ltvqklvtoufhracpwmor.supabase.co";
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_uFkOQNB6eZF4FRBemyt7-A_fx9_ENMt";
+  return createClient(url, key);
+}
 
 function classifyCategory(subject: string): string {
   const text = subject.toLowerCase();
@@ -87,6 +88,7 @@ export async function GET() {
     // Mais recentes primeiro
     emails.reverse();
 
+    const supabase = getSupabaseAdmin();
     const { error } = await supabase
       .from("received_emails")
       .upsert(emails, { onConflict: "sender_email,subject", ignoreDuplicates: true });
