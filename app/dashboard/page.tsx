@@ -123,26 +123,54 @@ export default function Dashboard() {
                         const isCurrent = index === currentStepIndex;
 
                         if (step.status === "Finalizado" && isCurrent) {
-                            return (
-                                <div key={step.id} className="relative z-10 flex items-center gap-6 group">
-                                    <button
-                                        onClick={() => router.push('/dashboard/premiere')}
-                                        className="w-14 h-14 rounded-full bg-catarse-gold text-catarse-moss flex items-center justify-center shadow-[0_0_30px_rgba(212,205,168,0.5)] hover:scale-110 transition-transform duration-300 animate-pulse"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 ml-1">
-                                            <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
-                                        </svg>
-                                    </button>
-                                    <div className="opacity-100 translate-x-2">
-                                        <h3 className="font-serif italic text-2xl text-catarse-gold cursor-pointer hover:underline" onClick={() => router.push('/dashboard/premiere')}>
-                                            Assistir Filme
-                                        </h3>
-                                        <p className="text-[10px] uppercase tracking-widest text-white/50 mt-1">
-                                            Sua estreia está pronta
-                                        </p>
+                            const hasVideo = user.has_video !== false;
+                            const hasPhotos = user.has_photos === true || (Array.isArray(user.photo_album) && user.photo_album.length > 0);
+
+                            if (hasVideo) {
+                                return (
+                                    <div key={step.id} className="relative z-10 flex items-center gap-6 group">
+                                        <button
+                                            onClick={() => router.push('/dashboard/premiere')}
+                                            className="w-14 h-14 rounded-full bg-catarse-gold text-catarse-moss flex items-center justify-center shadow-[0_0_30px_rgba(212,205,168,0.5)] hover:scale-110 transition-transform duration-300 animate-pulse"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 ml-1">
+                                                <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+                                            </svg>
+                                        </button>
+                                        <div className="opacity-100 translate-x-2">
+                                            <h3 className="font-serif italic text-2xl text-catarse-gold cursor-pointer hover:underline" onClick={() => router.push('/dashboard/premiere')}>
+                                                Assistir Filme
+                                            </h3>
+                                            <p className="text-[10px] uppercase tracking-widest text-white/50 mt-1">
+                                                Sua estreia está pronta
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            )
+                                );
+                            }
+
+                            if (hasPhotos) {
+                                return (
+                                    <div key={step.id} className="relative z-10 flex items-center gap-6 group">
+                                        <button
+                                            onClick={() => router.push('/dashboard/fotos')}
+                                            className="w-14 h-14 rounded-full bg-catarse-gold text-catarse-moss flex items-center justify-center shadow-[0_0_30px_rgba(212,205,168,0.5)] hover:scale-110 transition-transform duration-300 animate-pulse"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                            </svg>
+                                        </button>
+                                        <div className="opacity-100 translate-x-2">
+                                            <h3 className="font-serif italic text-2xl text-catarse-gold cursor-pointer hover:underline" onClick={() => router.push('/dashboard/fotos')}>
+                                                Ver Álbum de Fotos
+                                            </h3>
+                                            <p className="text-[10px] uppercase tracking-widest text-white/50 mt-1">
+                                                Sua galeria em alta resolução está pronta
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            }
                         }
 
                         return (
@@ -176,57 +204,83 @@ export default function Dashboard() {
                 {(() => {
                     const showBriefing = user.briefing_enabled !== false;
                     const showExtras = user.extras_enabled !== false;
+                    const showPhotos = user.has_photos === true || (Array.isArray(user.photo_album) && user.photo_album.length > 0);
+                    const photoCount = Array.isArray(user.photo_album) ? user.photo_album.length : 0;
 
-                    let briefingClass = "border border-white/10 p-6 rounded text-left hover:bg-white/5 transition-all duration-300 group relative overflow-hidden";
-                    let laboratorioClass = "border border-white/10 p-6 rounded text-left hover:bg-white/5 transition-all duration-300 group relative overflow-hidden";
-                    let extrasClass = "border border-white/10 p-6 rounded text-left hover:bg-white/5 transition-all duration-300 group relative overflow-hidden flex flex-col";
-
-                    if (showBriefing && showExtras) {
-                        // Layout original: Briefing e Lab são meio-meio, Extras é full-width embaixo
-                        extrasClass += " md:col-span-2 md:items-center md:text-center";
-                    } else if (!showBriefing && showExtras) {
-                        // Apenas Lab e Extras: ficam lado a lado (meio-meio)
-                    } else if (showBriefing && !showExtras) {
-                        // Apenas Briefing e Lab: ficam lado a lado (meio-meio)
-                    } else {
-                        // Apenas Laboratório ativo: fica full-width e centralizado
-                        laboratorioClass += " md:col-span-2 md:items-center md:text-center";
-                    }
+                    let baseCardClass = "border border-white/10 p-6 rounded text-left hover:bg-white/5 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between";
 
                     return (
                         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 pb-12">
+                            {/* Botão Álbum de Fotos (Destaque em Ouro se habilitado) */}
+                            {showPhotos && (
+                                <button
+                                    onClick={() => router.push('/dashboard/fotos')}
+                                    className={`${baseCardClass} bg-catarse-gold/5 border-catarse-gold/30 hover:border-catarse-gold`}
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-r from-catarse-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-catarse-gold text-xs uppercase tracking-widest group-hover:translate-x-1 transition-transform relative z-10 flex items-center gap-1.5 font-bold">
+                                                📷 Galeria Fotográfica
+                                            </span>
+                                            {photoCount > 0 && (
+                                                <span className="text-[9px] font-mono text-black bg-catarse-gold px-2 py-0.5 rounded-full font-bold">
+                                                    {photoCount} fotos
+                                                </span>
+                                            )}
+                                        </div>
+                                        <span className="font-serif italic text-2xl text-catarse-cream relative z-10">Álbum de Fotos</span>
+                                    </div>
+                                    <p className="text-white/40 text-xs mt-3 relative z-10 font-light">
+                                        Navegue pelas suas fotos em alta resolução, escolha suas favoritas e faça o download.
+                                    </p>
+                                </button>
+                            )}
+
                             {/* Botão Briefing */}
                             {showBriefing && (
                                 <button
                                     onClick={() => router.push('/dashboard/briefing')}
-                                    className={briefingClass}
+                                    className={baseCardClass}
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-r from-catarse-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                    <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Briefing</span>
-                                    <span className="font-serif italic text-2xl text-white/80 relative z-10">Sua História</span>
+                                    <div>
+                                        <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Briefing</span>
+                                        <span className="font-serif italic text-2xl text-white/80 relative z-10">Sua História</span>
+                                    </div>
+                                    <p className="text-white/40 text-xs mt-3 relative z-10 font-light">
+                                        Preencha o formulário com suas preferências para o roteiro do seu trabalho.
+                                    </p>
                                 </button>
                             )}
 
                             {/* Botão Laboratório */}
                             <button
                                 onClick={() => router.push('/dashboard/laboratorio')}
-                                className={laboratorioClass}
+                                className={baseCardClass}
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-catarse-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Showcase</span>
-                                <span className="font-serif italic text-2xl text-white/80 relative z-10">Laboratório de Cor</span>
+                                <div>
+                                    <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Showcase</span>
+                                    <span className="font-serif italic text-2xl text-white/80 relative z-10">Laboratório de Cor</span>
+                                </div>
+                                <p className="text-white/40 text-xs mt-3 relative z-10 font-light">
+                                    Veja o processo artesanal do tratamento de cor cinematográfico.
+                                </p>
                             </button>
 
-                            {/* Botão EXTRAS (Destaque Full Width se houver 3 elementos, senão meio-meio) */}
+                            {/* Botão EXTRAS (Fragmentos Ocultos) */}
                             {showExtras && (
                                 <button
                                     onClick={() => router.push('/dashboard/extras')}
-                                    className={extrasClass}
+                                    className={baseCardClass}
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-r from-catarse-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                    <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Upsell</span>
-                                    <span className="font-serif italic text-2xl text-white/80 relative z-10">Fragmentos Ocultos</span>
-                                    <p className="hidden md:block text-white/40 text-sm mt-2 max-w-md relative z-10">
+                                    <div>
+                                        <span className="block text-catarse-gold text-xs uppercase tracking-widest mb-2 group-hover:translate-x-1 transition-transform relative z-10">Upsell</span>
+                                        <span className="font-serif italic text-2xl text-white/80 relative z-10">Fragmentos Ocultos</span>
+                                    </div>
+                                    <p className="text-white/40 text-xs mt-3 relative z-10 font-light">
                                         Acesse cenas deletadas e momentos exclusivos que não entraram no corte final.
                                     </p>
                                 </button>

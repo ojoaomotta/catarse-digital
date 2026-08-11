@@ -104,6 +104,18 @@ export default function AdminPanel() {
     const [briefingEnabled, setBriefingEnabled] = useState(true);
     const [extrasEnabled, setExtrasEnabled] = useState(true);
 
+    // Entregáveis (Vídeo vs Fotos)
+    const [hasVideo, setHasVideo] = useState(true);
+    const [hasPhotos, setHasPhotos] = useState(false);
+    const [photoAlbum, setPhotoAlbum] = useState<{ id: string; url: string; title: string }[]>([]);
+    const [photosDownloadUrl, setPhotosDownloadUrl] = useState("");
+
+    // Estado do Upload em Lote de Fotos
+    const [batchUploading, setBatchUploading] = useState(false);
+    const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, percent: 0 });
+    const [bulkUrlsText, setBulkUrlsText] = useState("");
+    const [showBulkPasteModal, setShowBulkPasteModal] = useState(false);
+
     // 1. Carregar a senha atual do banco ao montar
     useEffect(() => {
         const fetchDbPassword = async () => {
@@ -206,6 +218,18 @@ export default function AdminPanel() {
         setExtrasUnlocked(client.extras_unlocked || false);
         setBriefingEnabled(client.briefing_enabled !== false);
         setExtrasEnabled(client.extras_enabled !== false);
+
+        setHasVideo(client.has_video !== false);
+        setHasPhotos(client.has_photos === true);
+        const rawAlbum = getSafeArray(client.photo_album);
+        setPhotoAlbum(rawAlbum.map((item: any, idx: number) => {
+            if (typeof item === "string") {
+                return { id: `photo-${idx}`, url: item, title: `Foto ${idx + 1}` };
+            }
+            return { id: item.id || `photo-${idx}`, url: item.url || "", title: item.title || `Foto ${idx + 1}` };
+        }));
+        setPhotosDownloadUrl(client.photos_download_url || "");
+
         setEditingExtraIndex(null);
         setNewExtra({ title: "", thumb: "", video_url: "", duration: "" });
     };
@@ -221,6 +245,15 @@ export default function AdminPanel() {
         setExtrasUnlocked(false);
         setBriefingEnabled(true);
         setExtrasEnabled(true);
+
+        setHasVideo(true);
+        setHasPhotos(false);
+        setPhotoAlbum([]);
+        setPhotosDownloadUrl("");
+        setBatchUploading(false);
+        setBulkUrlsText("");
+        setShowBulkPasteModal(false);
+
         setEditingExtraIndex(null);
         setNewExtra({ title: "", thumb: "", video_url: "", duration: "" });
     };
@@ -236,7 +269,11 @@ export default function AdminPanel() {
             ...formData, 
             briefing_questions: briefingQuestions,
             briefing_enabled: briefingEnabled,
-            extras_enabled: extrasEnabled
+            extras_enabled: extrasEnabled,
+            has_video: hasVideo,
+            has_photos: hasPhotos,
+            photo_album: photoAlbum,
+            photos_download_url: photosDownloadUrl
         };
 
         if (editingClient) {
@@ -266,6 +303,88 @@ export default function AdminPanel() {
             }
         }
         resetForm();
+    };
+
+    // Handlers do Álbum de Fotos em Lote
+    const handleBatchPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+
+        const filesArray = Array.from(e.target.files);
+        setBatchUploading(true);
+        setBatchProgress({ current: 0, total: filesArray.length, percent: 0 });
+
+        const newUploadedPhotos: { id: string; url: string; title: string }[] = [];
+
+        for (let i = 0; i < filesArray.length; i++) {
+            const file = filesArray[i];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `album/${Math.random().toString(36).substring(2, 12)}_${Date.now()}.${fileExt}`;
+
+            try {
+                const { error: uploadError } = await supabase.storage
+                    .from("images")
+                    .upload(fileName, file);
+
+                if (uploadError) {
+                    console.error("Erro ao subir foto:", file.name, uploadError);
+                } else {
+                    const { data } = supabase.storage.from("images").getPublicUrl(fileName);
+                    newUploadedPhotos.push({
+                        id: `photo-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
+                        url: data.publicUrl,
+                        title: file.name.replace(/\.[^/.]+$/, "")
+                    });
+                }
+            } catch (err) {
+                console.error("Exceção no upload:", err);
+            }
+
+            const currentCount = i + 1;
+            setBatchProgress({
+                current: currentCount,
+                total: filesArray.length,
+                percent: Math.round((currentCount / filesArray.length) * 100)
+            });
+        }
+
+        setPhotoAlbum(prev => [...prev, ...newUploadedPhotos]);
+        setBatchUploading(false);
+        alert(`${newUploadedPhotos.length} foto(s) enviada(s) e adicionada(s) ao álbum com sucesso!`);
+        e.target.value = "";
+    };
+
+    const handleBulkUrlAdd = () => {
+        if (!bulkUrlsText.trim()) return;
+        const urls = bulkUrlsText
+            .split(/[\n,]+/)
+            .map(u => u.trim())
+            .filter(u => u.length > 5 && (u.startsWith("http://") || u.startsWith("https://")));
+
+        if (urls.length === 0) {
+            alert("Nenhuma URL válida encontrada. Verifique se começam com http:// ou https://");
+            return;
+        }
+
+        const newPhotos = urls.map((url, idx) => ({
+            id: `photo-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+            url,
+            title: url.split("/").pop()?.split("?")[0] || `Foto ${idx + 1}`
+        }));
+
+        setPhotoAlbum(prev => [...prev, ...newPhotos]);
+        setBulkUrlsText("");
+        setShowBulkPasteModal(false);
+        alert(`${newPhotos.length} foto(s) adicionada(s) ao álbum!`);
+    };
+
+    const handleRemovePhoto = (id: string) => {
+        setPhotoAlbum(prev => prev.filter(p => p.id !== id));
+    };
+
+    const handleClearAlbum = () => {
+        if (confirm("Tem certeza que deseja apagar TODAS as fotos deste álbum?")) {
+            setPhotoAlbum([]);
+        }
     };
 
     // 4. Fragmentos Ocultos (Extras)
@@ -516,6 +635,16 @@ export default function AdminPanel() {
                                             </span>
                                         </div>
                                         <p className="text-xs text-white/50">{client.name}</p>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            {client.has_video !== false && (
+                                                <span className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-white/70 border border-white/5">🎬 Filme</span>
+                                            )}
+                                            {client.has_photos === true && (
+                                                <span className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#C9A96E]/10 text-[#C9A96E] border border-[#C9A96E]/20">
+                                                    📷 Fotos ({getSafeArray(client.photo_album).length})
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="flex gap-4 mt-3 pt-2 border-t border-white/[0.02] text-[10px]">
                                             <p className="text-[#C9A96E]/80 font-mono">User: {client.username}</p>
                                             <p className="text-white/30 font-mono">Pass: {client.password}</p>
@@ -557,17 +686,17 @@ export default function AdminPanel() {
                                     {/* FORMULÁRIO PRINCIPAL */}
                                     <form onSubmit={handleSubmit} className="space-y-6">
                                         
-                                        {/* SESSÃO 1: DADOS BÁSICOS */}
+                                        {/* SESSÃO 1: DADOS BÁSICOS & ENTREGÁVEIS */}
                                         <div className="bg-[#0e0e0e]/80 border border-white/5 rounded-xl p-6 space-y-4">
                                             <h3 className="text-white text-xs uppercase tracking-widest border-b border-white/5 pb-2">1. Dados Básicos do Projeto</h3>
                                             
                                             <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Nome dos Noivos (Exibição)</label>
+                                                <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Nome do Cliente / Casal (Exibição)</label>
                                                 <input className="w-full bg-[#050505] border border-white/10 p-3 rounded-lg text-white text-sm focus:border-[#C9A96E] focus:outline-none transition-all duration-200" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Ex: Julia & Leonardo" required />
                                             </div>
 
                                             <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Título do Filme</label>
+                                                <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Título do Projeto / Filme / Álbum</label>
                                                 <input className="w-full bg-[#050505] border border-white/10 p-3 rounded-lg text-white text-sm focus:border-[#C9A96E] focus:outline-none transition-all duration-200" value={formData.project_name} onChange={e => setFormData({ ...formData, project_name: e.target.value })} placeholder="Ex: O Som do Silêncio" required />
                                             </div>
 
@@ -575,15 +704,47 @@ export default function AdminPanel() {
                                                 <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Etapa de Produção</label>
                                                 <select className="w-full bg-[#050505] border border-white/10 p-3 rounded-lg text-white text-sm focus:border-[#C9A96E] focus:outline-none transition-all duration-200" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })}>
                                                     <option value="Contrato">Contrato Fechado</option>
-                                                    <option value="Captura">Em Captura (Filmagem)</option>
-                                                    <option value="Montagem">Em Montagem (Edição)</option>
-                                                    <option value="Color Grading">Em Color Grading (Cor)</option>
-                                                    <option value="Finalizado">Finalizado / Pronto para Estreia</option>
+                                                    <option value="Captura">Em Captura (Filmagem / Cobertura)</option>
+                                                    <option value="Montagem">Em Montagem (Edição / Curadoria)</option>
+                                                    <option value="Color Grading">Em Color Grading (Tratamento de Cor)</option>
+                                                    <option value="Finalizado">Finalizado / Pronto para Entrega</option>
                                                 </select>
                                             </div>
 
+                                            {/* Toggles de Entregáveis (Vídeo e Fotos) */}
+                                            <div className="space-y-2 border-t border-white/5 pt-4 mt-2">
+                                                <label className="text-[10px] uppercase tracking-widest text-[#C9A96E] block font-bold">Tipo de Entrega / Mídias Habilitadas</label>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div className="flex items-center justify-between p-3.5 bg-black/40 rounded-xl border border-white/5">
+                                                        <div className="space-y-0.5">
+                                                            <span className="text-[10px] uppercase tracking-wider text-white/80 block font-bold flex items-center gap-1.5">🎬 Filmes (Vídeos)</span>
+                                                            <span className="text-[8px] text-white/30 block">Habilita player e transmissão 4K</span>
+                                                        </div>
+                                                        <label className="relative flex items-center cursor-pointer select-none">
+                                                            <input type="checkbox" checked={hasVideo} onChange={e => setHasVideo(e.target.checked)} className="hidden" />
+                                                            <div className={`w-9 h-5 rounded-full transition-colors ${hasVideo ? 'bg-[#C9A96E]' : 'bg-white/10'}`}>
+                                                                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${hasVideo ? 'left-[18px]' : 'left-0.5'}`} />
+                                                            </div>
+                                                        </label>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between p-3.5 bg-black/40 rounded-xl border border-white/5">
+                                                        <div className="space-y-0.5">
+                                                            <span className="text-[10px] uppercase tracking-wider text-white/80 block font-bold flex items-center gap-1.5">📷 Álbum de Fotos</span>
+                                                            <span className="text-[8px] text-white/30 block">Habilita galeria fotográfica de alta res</span>
+                                                        </div>
+                                                        <label className="relative flex items-center cursor-pointer select-none">
+                                                            <input type="checkbox" checked={hasPhotos} onChange={e => setHasPhotos(e.target.checked)} className="hidden" />
+                                                            <div className={`w-9 h-5 rounded-full transition-colors ${hasPhotos ? 'bg-[#C9A96E]' : 'bg-white/10'}`}>
+                                                                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${hasPhotos ? 'left-[18px]' : 'left-0.5'}`} />
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             {/* Ativação / Desativação do Briefing e Fragmentos Ocultos */}
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-white/5 pt-4 mt-2">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-white/5 pt-4">
                                                 <div className="flex items-center justify-between p-3.5 bg-black/40 rounded-xl border border-white/5">
                                                     <div className="space-y-0.5">
                                                         <span className="text-[10px] uppercase tracking-wider text-white/50 block font-bold">Briefing Habilitado</span>
@@ -630,51 +791,226 @@ export default function AdminPanel() {
                                             </div>
                                         </div>
 
-                                        {/* SESSÃO 3: LINKS E ARQUIVOS (BUNNY/CLOUDFLARE R2) */}
-                                        <div className="bg-[#0e0e0e]/80 border border-white/5 rounded-xl p-6 space-y-4">
-                                            <h3 className="text-white text-xs uppercase tracking-widest border-b border-white/5 pb-2">3. Links de Transmissão & Arquivos</h3>
-                                            
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Link do Filme (4K MP4 Cloudflare R2 ou Youtube)</label>
-                                                <input className="w-full bg-[#050505] border border-white/10 p-3 rounded-lg text-white text-sm focus:border-[#C9A96E] focus:outline-none transition-all duration-200" value={formData.video_url} onChange={e => setFormData({ ...formData, video_url: e.target.value })} placeholder="https://pub-xxxx.r2.dev/video-noivos.mp4" />
-                                            </div>
+                                        {/* SESSÃO 3: VÍDEOS (EXIBIDA APENAS SE HAS_VIDEO FOR VERDADEIRO) */}
+                                        {hasVideo && (
+                                            <div className="bg-[#0e0e0e]/80 border border-white/5 rounded-xl p-6 space-y-4">
+                                                <h3 className="text-white text-xs uppercase tracking-widest border-b border-white/5 pb-2 flex items-center gap-2">
+                                                    <span>🎬 3. Entregáveis de Vídeo (Filme & Estreia)</span>
+                                                </h3>
+                                                
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Link do Filme (4K MP4 Cloudflare R2 ou Youtube)</label>
+                                                    <input className="w-full bg-[#050505] border border-white/10 p-3 rounded-lg text-white text-sm focus:border-[#C9A96E] focus:outline-none transition-all duration-200" value={formData.video_url} onChange={e => setFormData({ ...formData, video_url: e.target.value })} placeholder="https://pub-xxxx.r2.dev/video-noivos.mp4" />
+                                                </div>
 
-                                            {/* COVER IMAGE UPLOADER */}
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Capa da Estreia (Poster / Thumbnail)</label>
-                                                <div className="flex flex-col sm:flex-row gap-3">
-                                                    <input className="flex-1 bg-[#050505] border border-white/10 p-3 rounded-lg text-white text-sm focus:border-[#C9A96E] focus:outline-none transition-all duration-200" value={formData.video_cover} onChange={e => setFormData({ ...formData, video_cover: e.target.value })} placeholder="https://pub-xxxx.r2.dev/thumbnail.jpg" />
-                                                    <div className="relative flex items-center justify-center">
-                                                        <input
-                                                            type="file"
-                                                            id="cover-file-upload"
-                                                            accept="image/*"
-                                                            onChange={(e) => handleFileUpload(e, 'video_cover', 'images')}
-                                                            className="hidden"
-                                                            disabled={uploading}
-                                                        />
-                                                        <label
-                                                            htmlFor="cover-file-upload"
-                                                            className={`bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] uppercase tracking-widest py-3 px-4 rounded-lg cursor-pointer transition-all h-full flex items-center justify-center shrink-0 border border-white/10 ${uploading && uploadField === 'video_cover' ? 'animate-pulse opacity-50 cursor-wait' : ''}`}
-                                                        >
-                                                            {uploading && uploadField === 'video_cover' ? "Enviando..." : "Subir Imagem"}
-                                                        </label>
+                                                {/* COVER IMAGE UPLOADER */}
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Capa da Estreia (Poster / Thumbnail)</label>
+                                                    <div className="flex flex-col sm:flex-row gap-3">
+                                                        <input className="flex-1 bg-[#050505] border border-white/10 p-3 rounded-lg text-white text-sm focus:border-[#C9A96E] focus:outline-none transition-all duration-200" value={formData.video_cover} onChange={e => setFormData({ ...formData, video_cover: e.target.value })} placeholder="https://pub-xxxx.r2.dev/thumbnail.jpg" />
+                                                        <div className="relative flex items-center justify-center">
+                                                            <input
+                                                                type="file"
+                                                                id="cover-file-upload"
+                                                                accept="image/*"
+                                                                onChange={(e) => handleFileUpload(e, 'video_cover', 'images')}
+                                                                className="hidden"
+                                                                disabled={uploading}
+                                                            />
+                                                            <label
+                                                                htmlFor="cover-file-upload"
+                                                                className={`bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] uppercase tracking-widest py-3 px-4 rounded-lg cursor-pointer transition-all h-full flex items-center justify-center shrink-0 border border-white/10 ${uploading && uploadField === 'video_cover' ? 'animate-pulse opacity-50 cursor-wait' : ''}`}
+                                                            >
+                                                                {uploading && uploadField === 'video_cover' ? "Enviando..." : "Subir Imagem"}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    {formData.video_cover && (
+                                                        <div className="mt-2 w-full max-w-[200px] aspect-[16/9] relative bg-black border border-white/10 rounded-lg overflow-hidden">
+                                                            <img src={formData.video_cover} className="object-cover w-full h-full" alt="Cover Preview" />
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Link de Download (Master Original 4K)</label>
+                                                    <input className="w-full bg-[#050505] border border-white/10 p-3 rounded-lg text-white text-sm focus:border-[#C9A96E] focus:outline-none transition-all duration-200" value={formData.download_url} onChange={e => setFormData({ ...formData, download_url: e.target.value })} placeholder="https://pub-xxxx.r2.dev/master-4k.mp4" />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* SESSÃO 3.B: ÁLBUM DE FOTOGRAFIA (EXIBIDA APENAS SE HAS_PHOTOS FOR VERDADEIRO) */}
+                                        {hasPhotos && (
+                                            <div className="bg-[#0e0e0e]/80 border border-[#C9A96E]/30 rounded-xl p-6 space-y-6">
+                                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/5 pb-3 gap-2">
+                                                    <div>
+                                                        <h3 className="text-[#C9A96E] text-xs uppercase tracking-widest font-bold flex items-center gap-2">
+                                                            <span>📷 Álbum de Fotografia (Galeria de Alta Resolução)</span>
+                                                        </h3>
+                                                        <p className="text-[10px] text-white/40 mt-0.5">
+                                                            {photoAlbum.length} foto(s) cadastradas no álbum do cliente
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2">
+                                                        {photoAlbum.length > 0 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={handleClearAlbum}
+                                                                className="text-[9px] uppercase tracking-wider px-2.5 py-1.5 rounded bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20 transition-all"
+                                                            >
+                                                                Limpar Álbum
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                {formData.video_cover && (
-                                                    <div className="mt-2 w-full max-w-[200px] aspect-[16/9] relative bg-black border border-white/10 rounded-lg overflow-hidden">
-                                                        <img src={formData.video_cover} className="object-cover w-full h-full" alt="Cover Preview" />
+
+                                                {/* BARRA DE UPLOAD EM LOTE */}
+                                                <div className="bg-black/50 border border-dashed border-[#C9A96E]/30 p-5 rounded-xl space-y-4 text-center">
+                                                    <div className="space-y-1">
+                                                        <p className="text-white text-xs font-serif italic">Upload de Fotos em Lote (Alta Resolução)</p>
+                                                        <p className="text-[10px] text-white/40 max-w-md mx-auto">
+                                                            Selecione dezenas de fotos diretamente do seu computador ou cole múltiplos links de CDN (Cloudflare R2 / S3).
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+                                                        {/* Input de arquivo múltiplo */}
+                                                        <div className="relative">
+                                                            <input
+                                                                type="file"
+                                                                id="batch-photo-upload"
+                                                                multiple
+                                                                accept="image/*"
+                                                                onChange={handleBatchPhotoUpload}
+                                                                className="hidden"
+                                                                disabled={batchUploading}
+                                                            />
+                                                            <label
+                                                                htmlFor="batch-photo-upload"
+                                                                className={`bg-[#C9A96E] hover:bg-white text-black font-bold text-[10px] uppercase tracking-widest py-2.5 px-5 rounded-lg cursor-pointer transition-all inline-flex items-center gap-2 shadow-lg shadow-[#C9A96E]/10 ${batchUploading ? 'opacity-50 cursor-wait' : ''}`}
+                                                            >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                                                                </svg>
+                                                                {batchUploading ? "Enviando Lote..." : "+ Selecionar Fotos do PC"}
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Botão Colar URLs em Lote */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowBulkPasteModal(true)}
+                                                            className="bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] uppercase tracking-widest py-2.5 px-4 rounded-lg border border-white/10 transition-all inline-flex items-center gap-2"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                                                            </svg>
+                                                            Colar URLs em Lote
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Barra de Progresso durante upload */}
+                                                    {batchUploading && (
+                                                        <div className="bg-[#080808] border border-[#C9A96E]/40 p-4 rounded-xl space-y-2 text-left animate-pulse max-w-md mx-auto mt-4">
+                                                            <div className="flex justify-between text-[10px] uppercase tracking-widest text-[#C9A96E] font-bold">
+                                                                <span>Processando upload do lote...</span>
+                                                                <span>{batchProgress.current} / {batchProgress.total} ({batchProgress.percent}%)</span>
+                                                            </div>
+                                                            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-[#C9A96E] transition-all duration-300" style={{ width: `${batchProgress.percent}%` }} />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* MODAL / TEXTAREA COLAR URLS EM LOTE */}
+                                                {showBulkPasteModal && (
+                                                    <div className="bg-black/90 border border-[#C9A96E]/40 p-5 rounded-xl space-y-4 text-left animate-fade-in">
+                                                        <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                                                            <h4 className="text-white text-xs uppercase tracking-wider font-bold">Colar Múltiplas URLs de Fotos (Uma por linha)</h4>
+                                                            <button type="button" onClick={() => setShowBulkPasteModal(false)} className="text-white/40 hover:text-white text-xs">✕ Fechar</button>
+                                                        </div>
+                                                        <p className="text-[10px] text-white/50">
+                                                            Cole os links diretos das imagens enviadas via Cyberduck / Cloudflare R2 / CDN. Formato: um link por linha ou separados por vírgula.
+                                                        </p>
+                                                        <textarea
+                                                            rows={6}
+                                                            className="w-full bg-[#050505] border border-white/10 p-3 rounded-lg text-white text-xs font-mono focus:border-[#C9A96E] focus:outline-none"
+                                                            placeholder="https://pub-xxxx.r2.dev/foto-001.jpg&#10;https://pub-xxxx.r2.dev/foto-002.jpg&#10;https://pub-xxxx.r2.dev/foto-003.jpg"
+                                                            value={bulkUrlsText}
+                                                            onChange={e => setBulkUrlsText(e.target.value)}
+                                                        />
+                                                        <div className="flex justify-end gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowBulkPasteModal(false)}
+                                                                className="px-4 py-2 bg-white/5 text-white/60 text-[10px] uppercase tracking-wider rounded"
+                                                            >
+                                                                Cancelar
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={handleBulkUrlAdd}
+                                                                className="px-4 py-2 bg-[#C9A96E] text-black text-[10px] font-bold uppercase tracking-wider rounded hover:bg-white transition-colors"
+                                                            >
+                                                                Adicionar ao Álbum
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 )}
-                                            </div>
 
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Link de Download (Master Original 4K)</label>
-                                                <input className="w-full bg-[#050505] border border-white/10 p-3 rounded-lg text-white text-sm focus:border-[#C9A96E] focus:outline-none transition-all duration-200" value={formData.download_url} onChange={e => setFormData({ ...formData, download_url: e.target.value })} placeholder="https://pub-xxxx.r2.dev/master-4k.mp4" />
-                                            </div>
+                                                {/* LINK DE DOWNLOAD DO ÁLBUM COMPLETO (ZIP) */}
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Link de Download do Álbum Completo (Arquivo ZIP em alta resolução)</label>
+                                                    <input
+                                                        className="w-full bg-[#050505] border border-white/10 p-3 rounded-lg text-white text-sm focus:border-[#C9A96E] focus:outline-none transition-all duration-200"
+                                                        value={photosDownloadUrl}
+                                                        onChange={e => setPhotosDownloadUrl(e.target.value)}
+                                                        placeholder="https://pub-xxxx.r2.dev/album-completo-noivos.zip"
+                                                    />
+                                                </div>
 
-                                            {/* CONTRATO PDF UPLOADER */}
-                                            <div className="space-y-2 border-t border-white/5 pt-4">
+                                                {/* PRÉ-VISUALIZAÇÃO EM GRADE DO ÁLBUM */}
+                                                <div className="space-y-3 pt-2">
+                                                    <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Fotos do Álbum ({photoAlbum.length})</label>
+                                                    
+                                                    {photoAlbum.length === 0 ? (
+                                                        <div className="text-center py-10 border border-dashed border-white/5 rounded-xl bg-black/20">
+                                                            <p className="text-white/20 italic text-xs">Nenhuma foto adicionada ao álbum ainda.</p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 max-h-[350px] overflow-y-auto p-1 bg-black/40 border border-white/5 rounded-xl">
+                                                            {photoAlbum.map((photo, idx) => (
+                                                                <div key={photo.id || idx} className="relative aspect-square group rounded-lg overflow-hidden border border-white/10 bg-zinc-900">
+                                                                    <img src={photo.url} alt={photo.title || `Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                                                                    <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-1">
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => handleRemovePhoto(photo.id)}
+                                                                            className="p-1.5 bg-red-500 text-white rounded-full hover:scale-110 transition-transform"
+                                                                            title="Remover Foto"
+                                                                        >
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                                                            </svg>
+                                                                        </button>
+                                                                    </div>
+                                                                    <span className="absolute bottom-1 left-1 right-1 text-[7px] text-white bg-black/80 px-1 py-0.5 rounded truncate pointer-events-none">
+                                                                        {photo.title || `#${idx + 1}`}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* CONTRATO PDF UPLOADER */}
+                                        <div className="bg-[#0e0e0e]/80 border border-white/5 rounded-xl p-6 space-y-4">
+                                            <h3 className="text-white text-xs uppercase tracking-widest border-b border-white/5 pb-2">4. Documentos & Contrato</h3>
+                                            <div className="space-y-2">
                                                 <label className="text-[10px] uppercase tracking-wider text-white/40 block ml-1">Contrato de Serviço (Arquivo PDF)</label>
                                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                                                     <input
@@ -1103,33 +1439,38 @@ export default function AdminPanel() {
                                     </form>
                                 </div>
 
-                                {/* Script de Inicialização da Tabela no Supabase */}
+                                 {/* Script de Inicialização da Tabela no Supabase */}
                                 <div className="bg-[#0e0e0e]/85 p-6 rounded-xl border border-[#C9A96E]/20 space-y-4">
                                     <div className="border-b border-[#C9A96E]/10 pb-2">
-                                        <h3 className="text-[#C9A96E] text-xs uppercase tracking-widest font-bold">Instalação da Senha Dinâmica</h3>
-                                        <p className="text-[10px] text-white/40">Necessário rodar uma vez no seu Supabase</p>
+                                        <h3 className="text-[#C9A96E] text-xs uppercase tracking-widest font-bold">Instalação & Migração SQL</h3>
+                                        <p className="text-[10px] text-white/40">Execute no SQL Editor do seu Supabase</p>
                                     </div>
 
                                     <p className="text-xs text-white/60 leading-relaxed text-justify">
-                                        Para que a senha seja lida do banco de dados ao invés do código, você precisa criar a tabela correspondente. Copie o script SQL abaixo e cole no seu **Supabase SQL Editor** e clique em **RUN**:
+                                        Copie o script SQL abaixo e cole no seu **Supabase SQL Editor** para habilitar o suporte a entregas de Álbum de Fotos, Seleção de Entregáveis (Vídeo vs Fotos) e Senha Mestra:
                                     </p>
 
                                     <pre className="w-full bg-[#050505] border border-white/10 p-3 rounded-lg text-[9px] text-[#C9A96E] font-mono whitespace-pre overflow-x-auto select-all leading-relaxed">
-{`-- Criar a tabela de configurações
+{`-- 1. Criar a tabela de configurações da senha mestra
 create table if not exists admin_settings (
   id uuid default gen_random_uuid() primary key,
   key text unique not null,
   value text not null,
-  created_at timestamp with time zone 
-    default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone 
-    default timezone('utc'::text, now()) not null
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Inserir senha inicial (catarse2026)
 insert into admin_settings (key, value)
 values ('admin_password', 'catarse2026')
-on conflict (key) do nothing;`}
+on conflict (key) do nothing;
+
+-- 2. Adicionar colunas de Fotos e Entregáveis na tabela de clientes
+alter table clients 
+add column if not exists has_video boolean default true,
+add column if not exists has_photos boolean default false,
+add column if not exists photo_album jsonb default '[]'::jsonb,
+add column if not exists favorite_photos jsonb default '[]'::jsonb,
+add column if not exists photos_download_url text;`}
                                     </pre>
                                 </div>
                             </div>

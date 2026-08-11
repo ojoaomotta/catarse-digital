@@ -40,4 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# large media files are tracked via Git LFS (.gitattributes)
+# large media files (exceed GitHub 100MB limit)
+public/*.mp4
+public/*.MOV
+
