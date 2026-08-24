@@ -111,6 +111,7 @@ export default function LinksPage() {
                     preload="auto"
                     className="absolute inset-0 w-full h-full object-cover"
                 >
+                    <source src="https://ltvqklvtoufhracpwmor.supabase.co/storage/v1/object/public/images/bg-videos/herobg.mp4" type="video/mp4" />
                     <source src="/herobg.mp4" type="video/mp4" />
                 </video>
             </div>

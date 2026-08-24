@@ -42,5 +42,6 @@ next-env.d.ts
 
 # large media files (exceed GitHub 100MB limit)
 public/*.mp4
+!public/herobg.mp4
 public/*.MOV
 

@@ -150,6 +150,7 @@ export default function HomePage() {
                         preload="auto"
                         className="absolute inset-0 w-full h-full object-cover opacity-50"
                     >
+                        <source src="https://ltvqklvtoufhracpwmor.supabase.co/storage/v1/object/public/images/bg-videos/herobg.mp4" type="video/mp4" />
                         <source src="/herobg.mp4" type="video/mp4" />
                     </video>
                     <div className="absolute inset-0 bg-gradient-to-t from-catarse-black via-catarse-black/30 to-transparent"></div>
