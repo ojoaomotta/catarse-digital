@@ -5,18 +5,32 @@ on:
     branches:
       - main
   schedule:
-    # Roda diariamente às 05:00 UTC para garantir atividade constante
-    - cron: '0 5 * * *'
-  workflow_dispatch: # Permite rodar manualmente pelo painel do GitHub
+    # Roda a cada 12 horas (00:00 e 12:00 UTC) para garantir atividade constante
+    - cron: '0 0,12 * * *'
+  workflow_dispatch:
 
 jobs:
   ping-supabase:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase API (Real Query)
+      - name: Ping Supabase API (Real Database Query with Retries)
         env:
           SUPABASE_URL: 'https://ltvqklvtoufhracpwmor.supabase.co'
           SUPABASE_ANON_KEY: 'sb_publishable_uFkOQNB6eZF4FRBemyt7-A_fx9_ENMt'
         run: |
-          # Faz uma consulta real no banco (tabela clients) para evitar que o Supabase entre em modo inativo
-          curl -s -o /dev/null -w "%{http_code}" -X GET "$SUPABASE_URL/rest/v1/clients?select=id&limit=1" -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY"
+          echo "Iniciando consulta de Keep Alive no Supabase..."
+          
+          HTTP_CODE=$(curl -s --retry 5 --retry-delay 5 --retry-all-errors -o /tmp/supabase_response.json -w "%{http_code}" -X GET "$SUPABASE_URL/rest/v1/clients?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+
+          echo "Código HTTP retornado: $HTTP_CODE"
+          
+          if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 206 ]; then
+            echo "✅ Supabase está ativo e respondendo normalmente!"
+            cat /tmp/supabase_response.json
+          else
+            echo "⚠️ Resposta inesperada ou indisponibilidade temporária. Código: $HTTP_CODE"
+            cat /tmp/supabase_response.json || true
+            exit 1
+          fi
